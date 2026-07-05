@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دليل النشر - منصة تأجير المخازن</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    line-height: 1.8;
+  }
+  .header {
+    background: linear-gradient(135deg, #eab308 0%, #f59e0b 100%);
+    padding: 50px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+    animation: pulse 4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+  .header h1 {
+    font-size: 36px;
+    font-weight: 800;
+    color: #1c1917;
+    position: relative;
+  }
+  .header p {
+    color: #422006;
+    font-size: 16px;
+    margin-top: 8px;
+    position: relative;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+  .badge {
+    display: inline-block;
+    background: #eab308;
+    color: #1c1917;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .section {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid #e2e8f0;
+    position: relative;
+  }
+  .section h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1c1917;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section h2 .step-no {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #eab308;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 800;
+    color: #1c1917;
+    flex-shrink: 0;
+  }
+  .section h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #334155;
+    margin: 20px 0 10px;
+  }
+  .section p { color: #475569; margin-bottom: 10px; font-size: 14px; }
+  .section ul, .section ol { padding-right: 20px; margin-bottom: 12px; }
+  .section li { color: #475569; margin-bottom: 6px; font-size: 14px; }
+  code {
+    background: #1e293b;
+    color: #eab308;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    direction: ltr;
+    display: inline-block;
+  }
+  pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 16px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 12px 0;
+    direction: ltr;
+    text-align: left;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  pre .comment { color: #94a3b8; }
+  pre .cmd { color: #eab308; }
+  pre .str { color: #22c55e; }
+  .info-box {
+    background: #fef9c3;
+    border: 1px solid #fde047;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #713f12;
+  }
+  .info-box strong { color: #422006; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: right;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  th {
+    background: #f8fafc;
+    font-weight: 700;
+    color: #334155;
+  }
+  td { color: #475569; }
+  .footer {
+    text-align: center;
+    padding: 30px;
+    color: #94a3b8;
+    font-size: 13px;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 20px;
+  }
+  @media print {
+    body { background: white; }
+    .section { box-shadow: none; break-inside: avoid; }
+    .header { padding: 30px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>دليل النشر إلى الإنتاج</h1>
+  <p>منصة تأجير المخازن — Warehouse Rental Platform</p>
+  <p style="margin-top:6px;font-size:14px;opacity:0.9;">Hostinger VPS + Node.js + PostgreSQL + Next.js</p>
+</div>
+
+<div class="container">
+
+  <!-- المتطلبات -->
+  <div class="section">
+    <div class="badge">قبل البدء</div>
+    <h2><span class="step-no">0</span> المتطلبات الأساسية</h2>
+    <p>ما تحتاجه قبل بدء النشر:</p>
+    <table>
+      <tr><th>العنصر</th><th>التفاصيل</th><th>التكلفة التقريبية</th></tr>
+      <tr><td>VPS من هوستنغر</td><td>KVM 1 (1 vCPU, 4GB RAM, 50GB NVMe)</td><td>$6.49/شهر</td></tr>
+      <tr><td>اسم المجال</td><td>مثال: storge.sa أو warehouse.com</td><td>$10–15/سنة</td></tr>
+      <tr><td>حساب GitHub</td><td>رفع الكود ونشره</td><td>مجاني</td></tr>
+      <tr><td>SMTP (إيميلات)</td><td>Resend أو SendGrid لإرسال الإشعارات</td><td>مجاني (100/day)</td></tr>
+    </table>
+    <div class="info-box">
+      <strong>ملاحظة:</strong> PostgreSQL لا يعمل على خطط هوستنغر المشتركة (Shared/Cloud)،
+      لهذا نستخدم VPS. يمكنك اختيار Ubuntu 22.04 كنظام تشغيل عند شراء الـ VPS.
+    </div>
+  </div>
+
+  <!-- 1. شراء VPS -->
+  <div class="section">
+    <h2><span class="step-no">1</span> شراء وتجهيز الـ VPS</h2>
+    <p>اتبع الخطوات في لوحة تحكم هوستنغر (hPanel):</p>
+    <ol>
+      <li>سجل الدخول إلى <strong>hPanel</strong> → اختر <strong>VPS</strong>.</li>
+      <li>اختر الخطة <strong>KVM 1</strong> (أو أعلى حسب احتياجك).</li>
+      <li>اختر نظام التشغيل: <strong>Ubuntu 22.04 LTS</strong>.</li>
+      <li>اختر أقرب خادم جغرافي لجمهورك المستهدف (مثلاً: <strong>Europe</strong> للعراق/السعودية أو <strong>Middle East</strong> إن وجد).</li>
+      <li>أكمل عملية الشراء — ستحصل على IP وبيانات SSH.</li>
+    </ol>
+    <div class="info-box">
+      🔑 <strong>بيانات SSH:</strong> ستصلك عبر البريد: IP السيرفر، اسم المستخدم (root)، وكلمة المرور.
+    </div>
+  </div>
+
+  <!-- 2. الاتصال -->
+  <div class="section">
+    <h2><span class="step-no">2</span> الاتصال بالسيرفر</h2>
+    <p>استخدم أي عميل SSH (Terminal في Mac/Linux، أو PuTTY/Windows Terminal في Windows):</p>
+    <pre><span class="comment"># على ويندوز استخدم PowerShell:</span>
+ssh root@<span class="str">XX.XXX.XX.XX</span>
+
+<span class="comment"># ستُطلب منك كلمة المرور — اكتبها (لن تظهر)</span></pre>
+    <p>بعد أول تسجيل دخول، حدّث النظام:</p>
+    <pre>sudo apt update && sudo apt upgrade -y</pre>
+  </div>
+
+  <!-- 3. تثبيت الحزم -->
+  <div class="section">
+    <h2><span class="step-no">3</span> تثبيت المتطلبات</h2>
+    
+    <h3>3.1 Node.js (الإصدار 22 LTS)</h3>
+    <pre>curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt install -y nodejs
+node -v  <span class="comment"># تأكد من ظهور v22.x.x</span>
+npm -v   <span class="comment"># تأكد من ظهور رقم الإصدار</span></pre>
+
+    <h3>3.2 PostgreSQL</h3>
+    <pre>sudo apt install -y postgresql postgresql-contrib
+sudo systemctl enable postgresql
+sudo systemctl start postgresql
+sudo -u postgres psql -c "CREATE USER storge_admin WITH PASSWORD 'YourStrongPassword123!';"
+sudo -u postgres psql -c "CREATE DATABASE warehouse_rental OWNER storge_admin;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE warehouse_rental TO storge_admin;"</pre>
+    <div class="info-box">
+      ⚠️ <strong>الأمان:</strong> غيّر كلمة المرور أعلاه إلى كلمة قوية واحفظها في مدير كلمات مرور.
+      سنستخدمها في ملف <code>.env</code> لاحقاً.
+    </div>
+
+    <h3>3.3 Nginx (Reverse Proxy)</h3>
+    <pre>sudo apt install -y nginx
+sudo systemctl enable nginx
+sudo systemctl start nginx</pre>
+
+    <h3>3.4 PM2 (إدارة العمليات)</h3>
+    <pre>sudo npm install -g pm2
+pm2 --version</pre>
+
+    <h3>3.5 Git</h3>
+    <pre>sudo apt install -y git
+git --version</pre>
+  </div>
+
+  <!-- 4. رفع الكود -->
+  <div class="section">
+    <h2><span class="step-no">4</span> رفع الكود إلى السيرفر</h2>
+    <p>لديك خياران:</p>
+    
+    <h3>الخيار أ: استنساخ من GitHub (موصى به)</h3>
+    <pre><span class="comment"># أنشئ مجلد التطبيق</span>
+mkdir -p /var/www/warehouse-rental
+cd /var/www/warehouse-rental
+
+<span class="comment"># استنساخ الكود (استخدم رابط الـ GitHub repo الخاص بك)</span>
+git clone <span class="str">https://github.com/yourusername/warehouse-rental.git</span> .
+
+<span class="comment"># إذا كان الـ repo خاص، استخدم SSH:</span>
+git clone <span class="str">git@github.com:yourusername/warehouse-rental.git</span> .</pre>
+
+    <h3>الخيار ب: رفع الملفات يدوياً (SCP)</h3>
+    <pre><span class="comment"># من جهازك المحلي (PowerShell/Terminal)</span>
+scp -r C:\Users\Q\OneDrive\Desktop\storge\warehouse-rental\backend root@<span class="str">XX.XXX.XX.XX</span>:/var/www/warehouse-rental/backend
+scp -r C:\Users\Q\OneDrive\Desktop\storge\warehouse-rental\frontend root@<span class="str">XX.XXX.XX.XX</span>:/var/www/warehouse-rental/frontend</pre>
+  </div>
+
+  <!-- 5. إعداد Backend -->
+  <div class="section">
+    <h2><span class="step-no">5</span> إعداد وتشغيل الـ Backend</h2>
+    
+    <h3>5.1 إنشاء ملف البيئة</h3>
+    <pre>cd /var/www/warehouse-rental/backend
+nano .env</pre>
+    <p>ضع المحتوى التالي (استبدل القيم الخاصة بك):</p>
+    <pre>DATABASE_URL="postgresql://storge_admin:<span class="str">YourStrongPassword123!</span>@localhost:5432/warehouse_rental"
+JWT_SECRET="<span class="str">your-super-secret-jwt-key-change-this</span>"
+PORT=4000
+NODE_ENV=production
+FRONTEND_URL="https://<span class="str">your-domain.com</span>"
+
+<span class="comment"># SMTP (اختياري — للإيميلات)</span>
+SMTP_HOST=smtp.resend.com
+SMTP_PORT=465
+SMTP_USER=resend
+SMTP_PASS="<span class="str">your-resend-api-key</span>"
+EMAIL_FROM="noreply@<span class="str">your-domain.com</span>"</pre>
+    <p>احفظ الملف (<code>Ctrl+X</code> → <code>Y</code> → <code>Enter</code>).</p>
+
+    <h3>5.2 تثبيت الاعتماديات وبناء المشروع</h3>
+    <pre>cd /var/www/warehouse-rental/backend
+npm install
+npx prisma generate
+npx prisma db push <span class="comment"># إنشاء جداول قاعدة البيانات</span>
+
+<span class="comment"># (اختياري) تعبئة بيانات تجريبية</span>
+npm run seed</pre>
+
+    <h3>5.3 تشغيل الـ Backend بـ PM2</h3>
+    <pre><span class="comment"># بناء TypeScript</span>
+npm run build
+
+<span class="comment"># تشغيل مع PM2</span>
+pm2 start dist/index.js --name "warehouse-backend"
+pm2 save
+pm2 startup  <span class="comment"># لتشغيل PM2 تلقائياً بعد إعادة تشغيل السيرفر</span></pre>
+    <p>لتأكيد أن الباكند يعمل:</p>
+    <pre>curl http://localhost:4000/api/health</pre>
+    <div class="info-box">
+      ✅ مفترض أن ترى رد JSON مثل: <code>{"status":"ok"}</code>
+    </div>
+  </div>
+
+  <!-- 6. إعداد Frontend -->
+  <div class="section">
+    <h2><span class="step-no">6</span> إعداد وتشغيل الـ Frontend</h2>
+
+    <h3>6.1 إنشاء ملف البيئة</h3>
+    <pre>cd /var/www/warehouse-rental/frontend
+nano .env.local</pre>
+    <pre>NEXT_PUBLIC_API_URL=http://localhost:4000/api
+NEXT_PUBLIC_APP_URL=https://<span class="str">your-domain.com</span></pre>
+
+    <h3>6.2 تثبيت الاعتماديات وبناء المشروع</h3>
+    <pre>cd /var/www/warehouse-rental/frontend
+npm install
+npm run build</pre>
+    <div class="info-box">
+      قد يستغرق الـ build دقيقة أو دقيقتين. سينتج مجلد <code>.next</code>.
+    </div>
+
+    <h3>6.3 تشغيل الـ Frontend بـ PM2</h3>
+    <pre><span class="comment"># تشغيل Next.js مع PM2</span>
+pm2 start npm --name "warehouse-frontend" -- start -- -p 3000
+pm2 save</pre>
+    <p>تأكد من أن الفرونتند يعمل:</p>
+    <pre>curl http://localhost:3000</pre>
+  </div>
+
+  <!-- 7. Nginx -->
+  <div class="section">
+    <h2><span class="step-no">7</span> إعداد Nginx (Reverse Proxy + Domain + SSL)</h2>
+
+    <h3>7.1 تكوين Nginx لاستضافة المواقع</h3>
+    <p>أنشئ ملف إعدادات لموقعك:</p>
+    <pre>sudo nano /etc/nginx/sites-available/warehouse-rental</pre>
+    <p>ضع هذا المحتوى (استبدل <code>your-domain.com</code> باسم مجالك):</p>
+    <pre>server {
+    listen 80;
+    server_name <span class="str">your-domain.com</span> <span class="str">www.your-domain.com</span>;
+
+    <span class="comment"># Frontend (Next.js)</span>
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    <span class="comment"># Backend (API)</span>
+    location /api/ {
+        proxy_pass http://127.0.0.1:4000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        <span class="comment"># زيادة حجم الملفات المسموح بها للـ upload</span>
+        client_max_body_size 50M;
+    }
+
+    <span class="comment"># WebSocket (إذا كان مستخدماً)</span>
+    location /socket.io/ {
+        proxy_pass http://127.0.0.1:4000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    }
+}</pre>
+    <p>فعّل الموقع:</p>
+    <pre>sudo ln -s /etc/nginx/sites-available/warehouse-rental /etc/nginx/sites-enabled/
+sudo nginx -t          <span class="comment"># اختبار الإعدادات</span>
+sudo systemctl reload nginx</pre>
+
+    <h3>7.2 تفعيل SSL (مجاناً مع Certbot)</h3>
+    <pre>sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d <span class="str">your-domain.com</span> -d <span class="str">www.your-domain.com</span></pre>
+    <p>اتبع التعليمات — ستُحدّث إعدادات Nginx تلقائياً مع SSL.</p>
+    <div class="info-box">
+      🔒 <strong>تهانينا!</strong> موقعك الآن يعمل عبر <strong>HTTPS</strong>.
+      سيتجدد الشهادة تلقائياً كل 90 يوماً.
+    </div>
+  </div>
+
+  <!-- 8. Domain -->
+  <div class="section">
+    <h2><span class="step-no">8</span> ربط اسم المجال</h2>
+    <ol>
+      <li>اذهب إلى إعدادات DNS في خدمة الدومين (أو في hPanel).</li>
+      <li>أضف سجل <strong>A</strong> للقيمة <code>@</code> وعنوان IP السيرفر الخاص بك.</li>
+      <li>أضف سجل <strong>CNAME</strong> للقيمة <code>www</code> إلى <code>@</code>.</li>
+      <li>انتظر 5–30 دقيقة لنشر التغييرات.</li>
+    </ol>
+    <table>
+      <tr><th>النوع</th><th>الاسم</th><th>القيمة</th></tr>
+      <tr><td>A</td><td>@</td><td>XX.XXX.XX.XX (IP السيرفر)</td></tr>
+      <tr><td>CNAME</td><td>www</td><td>@</td></tr>
+    </table>
+  </div>
+
+  <!-- 9. SMTP -->
+  <div class="section">
+    <h2><span class="step-no">9</span> إعداد البريد الإلكتروني (SMTP)</h2>
+    <p>لإرسال إشعارات البريد (تأكيد التسجيل، الفواتير، إلخ).</p>
+
+    <h3>الخيار الموصى به: Resend (مجاني للبدء)</h3>
+    <ol>
+      <li>سجل في <a href="https://resend.com" style="color:#eab308;">resend.com</a>.</li>
+      <li>أنشئ API key.</li>
+      <li>أضف المجال الخاص بك للـ verification.</li>
+      <li>حدّث ملف <code>.env</code> في الباكند بقيم SMTP.</li>
+    </ol>
+    <p>بدائل: <strong>SendGrid</strong> (100 إيميل/يوم مجاناً)، <strong>Mailgun</strong>، أو <strong>SMTP2GO</strong>.</p>
+  </div>
+
+  <!-- 10. التشغيل النهائي -->
+  <div class="section">
+    <h2><span class="step-no">10</span> التشغيل النهائي والمراقبة</h2>
+
+    <h3>10.1 حفظ إعدادات PM2 للتشغيل التلقائي</h3>
+    <pre>pm2 save
+<span class="comment"># PM2 سيُشغّل التطبيقات تلقائياً بعد إعادة تشغيل السيرفر</span></pre>
+
+    <h3>10.2 أوامر PM2 الأساسية</h3>
+    <table>
+      <tr><th>الأمر</th><th>الوصف</th></tr>
+      <tr><td><code>pm2 list</code></td><td>عرض جميع العمليات</td></tr>
+      <tr><td><code>pm2 logs</code></td><td>عرض السجلات (logs)</td></tr>
+      <tr><td><code>pm2 restart all</code></td><td>إعادة تشغيل الكل</td></tr>
+      <tr><td><code>pm2 stop warehouse-backend</code></td><td>إيقاف الباكند</td></tr>
+      <tr><td><code>pm2 monit</code></td><td>لوحة مراقبة تفاعلية</td></tr>
+    </table>
+
+    <h3>10.3 اختبر الموقع 🎉</h3>
+    <p>افتح المتصفح على <code>https://your-domain.com</code> — يجب أن ترى الموقع يعمل!</p>
+
+    <h3>10.4 نصائح نهائية</h3>
+    <ul>
+      <li><strong>النسخ الاحتياطي:</strong> استخدم <code>pg_dump</code> لعمل نسخة احتياطية يومية لقاعدة البيانات</li>
+      <li><strong>جدار الحماية:</strong> أعدد <code>ufw</code> لفتح المنافذ 80، 443، 22 فقط</li>
+      <li><strong>التحديثات:</strong> شغّل <code>sudo apt update && sudo apt upgrade -y</code> أسبوعياً</li>
+      <li><strong>Fail2ban:</strong> ثبّته للحماية من هجمات SSH</li>
+    </ul>
+    <pre><span class="comment"># إعداد UFW (جدار الحماية)</span>
+sudo ufw allow OpenSSH
+sudo ufw allow 'Nginx Full'
+sudo ufw --force enable
+sudo ufw status
+
+<span class="comment"># تثبيت Fail2ban</span>
+sudo apt install -y fail2ban
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban</pre>
+  </div>
+
+  <!-- الملحق -->
+  <div class="section">
+    <div class="badge">ملحق</div>
+    <h2><span class="step-no">+</span> استكشاف الأخطاء الشائعة</h2>
+
+    <h3>المشكلة: 502 Bad Gateway</h3>
+    <p><strong>السبب:</strong> Nginx لا يصل إلى التطبيق. تأكد من أن PM2 يشغل التطبيقات (<code>pm2 list</code>).</p>
+
+    <h3>المشكلة: Cannot connect to database</h3>
+    <p><strong>السبب:</strong> PostgreSQL لا يعمل أو بيانات الاتصال خاطئة. تحقق:</p>
+    <pre>sudo systemctl status postgresql
+<span class="comment"># تأكد من صحة DATABASE_URL في .env</span></pre>
+
+    <h3>المشكلة: SSL not renewing</h3>
+    <p><strong>الحل:</strong> اختبر التجديد يدوياً:</p>
+    <pre>sudo certbot renew --dry-run</pre>
+
+    <h3>المشكلة: Next.js 502 بعد الـ build</h3>
+    <p><strong>السبب:</strong> ربما نسخة Node.js قديمة. تأكد من أنك تستخدم Node 22.x</p>
+    <pre>node -v
+<span class="comment"># إذا أقدم من 18، أعد تثبيت Node.js</span></pre>
+  </div>
+
+  <!-- التكلفة -->
+  <div class="section">
+    <div class="badge">تقدير التكاليف</div>
+    <h2><span class="step-no">$</span> التكلفة الشهرية التقديرية</h2>
+    <table>
+      <tr><th>البند</th><th>التكلفة</th></tr>
+      <tr><td>VPS KVM 1 (Hostinger)</td><td>$6.49</td></tr>
+      <tr><td>الدومين (موزّع على 12 شهر)</td><td>~$1.00</td></tr>
+      <tr><td>SMTP (Resend — مجاني 100/day)</td><td>$0.00</td></tr>
+      <tr><td style="font-weight:700;">المجموع</td><td style="font-weight:700;color:#eab308;">~$7.49/شهر</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<div class="footer">
+  منصة تأجير المخازن — دليل النشر<br>
+  أنشئ في يوليو 2026
+</div>
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: warehouse-rental-api
+    runtime: node
+    region: frankfurt
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: npx prisma db push && node dist/seed.js && node dist/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: warehouse-rental-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        value: https://warehouse-rental-frontend.onrender.com
+      - key: PORT
+        value: 4000
+      - key: NODE_ENV
+        value: production
+
+  - type: web
+    name: warehouse-rental-frontend
+    runtime: node
+    region: frankfurt
+    plan: free
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://warehouse-rental-api.onrender.com/api
+
+databases:
+  - name: warehouse-rental-db
+    plan: free
+    region: frankfurt
+    postgresMajorVersion: 16

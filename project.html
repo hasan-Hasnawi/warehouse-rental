@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام إدارة تأجير المخازن | Sotrage</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Cairo',sans-serif;background:linear-gradient(135deg,#fefce8 0%,#ffffff 50%,#f0fdfa 100%);color:#1a1a2e;line-height:1.8}
+.container{max-width:1100px;margin:0 auto;padding:0 20px}
+
+/* Header */
+.hero{background:linear-gradient(135deg,#eab308 0%,#facc15 50%,#eab308 100%);padding:60px 0 50px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,0.15) 0%,transparent 70%);animation:float 8s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,-20px)}}
+.hero h1{font-size:3rem;font-weight:800;color:#1a1a2e;position:relative;text-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.hero p{font-size:1.2rem;color:#422006;margin-top:10px;position:relative;max-width:600px;margin-left:auto;margin-right:auto}
+.hero .badge{display:inline-block;background:#1a1a2e;color:#facc15;padding:6px 20px;border-radius:20px;font-size:0.85rem;font-weight:600;margin-top:15px;position:relative}
+
+/* Nav */
+nav{background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:100}
+nav .container{display:flex;justify-content:space-between;align-items:center;padding:12px 20px}
+nav .logo{font-weight:800;font-size:1.3rem;color:#1a1a2e}
+nav .logo span{color:#eab308}
+nav ul{list-style:none;display:flex;gap:25px}
+nav a{text-decoration:none;color:#4b5563;font-weight:600;font-size:0.95rem;transition:color .2s}
+nav a:hover{color:#eab308}
+
+/* Sections */
+section{padding:60px 0}
+.section-title{text-align:center;font-size:2rem;font-weight:700;color:#1a1a2e;margin-bottom:8px}
+.section-sub{text-align:center;color:#6b7280;margin-bottom:40px;font-size:1.05rem}
+
+/* Features Grid */
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:24px;margin-top:10px}
+.feature-card{background:white;border-radius:16px;padding:30px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid #f3f4f6;transition:all .3s ease}
+.feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(234,179,8,0.15);border-color:#eab308}
+.feature-card .icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:15px}
+.feature-card h3{font-size:1.15rem;font-weight:700;margin-bottom:8px;color:#1a1a2e}
+.feature-card p{color:#6b7280;font-size:0.95rem}
+
+/* Tech Stack */
+.tech-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:10px}
+.tech-tag{background:white;border:2px solid #e5e7eb;border-radius:12px;padding:10px 22px;font-weight:600;font-size:0.95rem;transition:all .3s;color:#1a1a2e}
+.tech-tag:hover{border-color:#eab308;background:#fefce8;transform:scale(1.05)}
+
+/* Dashboard Cards */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-top:10px}
+.dash-card{background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid #f3f4f6;transition:all .3s}
+.dash-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,0.1)}
+.dash-card .preview{height:180px;display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative}
+.dash-card .info{padding:24px}
+.dash-card .info h3{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+.dash-card .info p{color:#6b7280;font-size:0.9rem}
+
+/* Dashboard preview gradients */
+.preview-admin{background:linear-gradient(135deg,#fef3c7,#fde68a)}
+.preview-client{background:linear-gradient(135deg,#ccfbf1,#99f6e4)}
+.preview-guard{background:linear-gradient(135deg,#e0e7ff,#c7d2fe)}
+
+/* Roles */
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:30px;margin-top:10px}
+.role-card{text-align:center;padding:40px 20px;background:white;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid #f3f4f6;transition:all .3s}
+.role-card:hover{transform:translateY(-3px);border-color:#eab308}
+.role-card .avatar{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 15px}
+.role-card h3{font-weight:700;margin-bottom:6px}
+.role-card p{color:#6b7280;font-size:0.9rem}
+.role-card ul{list-style:none;margin-top:12px;text-align:right;font-size:0.9rem;color:#4b5563}
+.role-card ul li{padding:4px 0}
+.role-card ul li::before{content:"✓ ";color:#eab308;font-weight:700}
+
+/* Stats */
+.stats{background:linear-gradient(135deg,#1a1a2e 0%,#2d2d44 100%);padding:60px 0;color:white;text-align:center}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:30px}
+.stat-item h2{font-size:2.5rem;font-weight:800;color:#eab308}
+.stat-item p{color:#9ca3af;font-size:1rem;margin-top:4px}
+
+/* Footer */
+footer{background:#1a1a2e;color:#9ca3af;padding:30px 0;text-align:center;font-size:0.9rem;border-top:1px solid #2d2d44}
+footer a{color:#eab308;text-decoration:none}
+
+/* RTL Specific */
+.rtl{direction:rtl}
+
+/* Responsive */
+@media(max-width:768px){
+  .hero h1{font-size:2rem}
+  nav ul{gap:12px}
+  nav a{font-size:0.85rem}
+  .features{grid-template-columns:1fr}
+  .dash-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="logo">Sotrage <span>◆</span></div>
+    <ul>
+      <li><a href="#features">المميزات</a></li>
+      <li><a href="#dashboards">لوحات التحكم</a></li>
+      <li><a href="#roles">الصلاحيات</a></li>
+      <li><a href="#tech">التقنيات</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <h1>نظام إدارة تأجير المخازن</h1>
+    <p>منصة متكاملة لإدارة المخازن والعقود والمدفوعات مع ثلاث لوحات تحكم ذكية</p>
+    <div class="badge">ERP للعقارات التجارية</div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="container">
+    <h2 class="section-title">⭐ المميزات الرئيسية</h2>
+    <p class="section-sub">كل ما تحتاجه لإدارة أعمال تأجير المخازن من مكان واحد</p>
+    <div class="features">
+      <div class="feature-card">
+        <div class="icon" style="background:#fef3c7;color:#92400e">📦</div>
+        <h3>إدارة المخازن</h3>
+        <p>إضافة وتعديل المخازن مع تحديد الموقع، المساحة، السعر، الحالة، الصور، والمميزات. تنظيم المخازن ضمن مجموعات مع تحديد حارس لكل مخزن.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon" style="background:#ccfbf1;color:#115e59">📄</div>
+        <h3>العقود الذكية</h3>
+        <p>إنشاء عقود مع احتساب تلقائي لمدة الإيجار، الخصومات، رسوم الحارس، وتخزين المواد. دعم العقود المسبقة الاتفاق مع توثيق التوقيعات.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon" style="background:#e0e7ff;color:#3730a3">💳</div>
+        <h3>إدارة المدفوعات</h3>
+        <p>أنظمة دفع متعددة (كي كارد، زين كاش، نقدي، بنك). إنشاء المدفوعات تلقائياً مع إمكانية التقسيط وتتبع حالة كل دفعة.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon" style="background:#fce7f3;color:#831843">👥</div>
+        <h3>إدارة المستخدمين</h3>
+        <p>نظام صلاحيات متكامل (مدير، مستأجر، حارس). إدارة حسابات المستأجرين والحراس مع تفعيل/تعطيل الحسابات.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon" style="background:#d1fae5;color:#065f46">📊</div>
+        <h3>التقارير والإحصائيات</h3>
+        <p>لوحة تحكم تفاعلية مع مؤشرات الأداء الرئيسية، إشعارات انتهاء العقود، وتقارير الإيرادات الشهرية والسنوية.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon" style="background:#fee2e2;color:#991b1b">🔐</div>
+        <h3>QR Code للحراس</h3>
+        <p>تطبيق للحارس لمسح QR عند الدخول والخروج، تسجيل الوقت الفعلي، وإدارة زيارات المستأجرين لمخازنهم.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="dashboards" style="background:#f9fafb">
+  <div class="container">
+    <h2 class="section-title">🖥️ لوحات التحكم</h2>
+    <p class="section-sub">ثلاث لوحات مستقلة كل منها مصممة لدور محدد</p>
+    <div class="dash-grid">
+      <div class="dash-card">
+        <div class="preview preview-admin">🏢</div>
+        <div class="info">
+          <h3>لوحة المدير</h3>
+          <p>إدارة شاملة للمخازن، العقود، المستأجرين، الحراس، المجموعات، المدفوعات، والتقارير. صلاحية كاملة على جميع أجزاء النظام.</p>
+        </div>
+      </div>
+      <div class="dash-card">
+        <div class="preview preview-client">👤</div>
+        <div class="info">
+          <h3>بوابة المستأجر</h3>
+          <p>تصفح المخازن المتاحة، تقديم طلبات حجز، متابعة العقود والمدفوعات، وإدارة المخزون الشخصي وطلبات الخدمات.</p>
+        </div>
+      </div>
+      <div class="dash-card">
+        <div class="preview preview-guard">🛡️</div>
+        <div class="info">
+          <h3>واجهة الحارس</h3>
+          <p>مسح QR للتحقق من الدخول، تسجيل الزيارات، إدارة الموقع، والتواصل مع الإدارة في الحالات الطارئة.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item"><h2>3</h2><p>لوحات تحكم</p></div>
+      <div class="stat-item"><h2>14</h2><p>نموذج بيانات</p></div>
+      <div class="stat-item"><h2>3</h2><p>لغات دعم</p></div>
+      <div class="stat-item"><h2>4</h2><p>بوابات دفع</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="roles">
+  <div class="container">
+    <h2 class="section-title">🔑 الصلاحيات والأدوار</h2>
+    <p class="section-sub">نظام صلاحيات متكامل بثلاث مستويات</p>
+    <div class="roles">
+      <div class="role-card">
+        <div class="avatar" style="background:#fef3c7">👑</div>
+        <h3>المدير</h3>
+        <p>Admin</p>
+        <ul>
+          <li>إدارة المخازن والمجموعات</li>
+          <li>إدارة العقود والمدفوعات</li>
+          <li>إدارة المستأجرين والحراس</li>
+          <li>التقارير والإحصائيات</li>
+          <li>الموافقة على طلبات الحجز</li>
+        </ul>
+      </div>
+      <div class="role-card">
+        <div class="avatar" style="background:#ccfbf1">👤</div>
+        <h3>المستأجر</h3>
+        <p>Client</p>
+        <ul>
+          <li>تصفح المخازن المتاحة</li>
+          <li>تقديم طلبات الحجز</li>
+          <li>متابعة العقود</li>
+          <li>سداد المدفوعات</li>
+          <li>إدارة المخزون والخدمات</li>
+        </ul>
+      </div>
+      <div class="role-card">
+        <div class="avatar" style="background:#e0e7ff">🛡️</div>
+        <h3>الحارس</h3>
+        <p>Guard</p>
+        <ul>
+          <li>مسح QR للتحقق</li>
+          <li>تسجيل الدخول والخروج</li>
+          <li>إدارة الزوار</li>
+          <li>تقارير الموقع</li>
+          <li>توثيق الحالات الطارئة</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tech" style="background:#f9fafb">
+  <div class="container">
+    <h2 class="section-title">⚙️ التقنيات المستخدمة</h2>
+    <p class="section-sub">أحدث التقنيات في بناء التطبيقات الحديثة</p>
+    <div class="tech-grid">
+      <span class="tech-tag">Next.js 16</span>
+      <span class="tech-tag">Tailwind CSS</span>
+      <span class="tech-tag">shadcn/ui</span>
+      <span class="tech-tag">TypeScript</span>
+      <span class="tech-tag">Node.js</span>
+      <span class="tech-tag">Express</span>
+      <span class="tech-tag">Prisma ORM</span>
+      <span class="tech-tag">SQLite</span>
+      <span class="tech-tag">JWT Auth</span>
+      <span class="tech-tag">Zod</span>
+      <span class="tech-tag">React</span>
+      <span class="tech-tag">REST API</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>جميع الحقوق محفوظة © 2026 <a href="#">Sotrage</a> — نظام إدارة تأجير المخازن</p>
+  </div>
+</footer>
+
+</body>
+</html>
