@@ -26,7 +26,14 @@ export async function list(req: AuthRequest, res: Response) {
     const { status, city, search, guardId, groupId, areaMin, areaMax } = req.query;
     const where: any = {};
 
-    if (status) where.status = status;
+    if (status === 'VACANT') {
+      where.contracts = { none: { status: 'ACTIVE' } };
+      where.status = { not: 'MAINTENANCE' };
+    } else if (status === 'RENTED') {
+      where.contracts = { some: { status: 'ACTIVE' } };
+    } else if (status) {
+      where.status = status;
+    }
     if (city) where.city = { contains: city as string };
     if (guardId) where.guardId = guardId as string;
     if (groupId) where.groupId = groupId as string;
@@ -44,13 +51,16 @@ export async function list(req: AuthRequest, res: Response) {
       include: {
         guard: { select: { id: true, fullName: true } },
         group: { select: { id: true, name: true, investorName: true } },
+        _count: { select: { contracts: { where: { status: 'ACTIVE' } } } },
       },
       orderBy: { createdAt: 'desc' },
     });
-    const parsed = warehouses.map(w => ({
+    const parsed = warehouses.map(({ _count, ...w }) => ({
       ...w,
       features: safeJsonParse(w.features, []),
       images: safeJsonParse(w.images, []),
+      isRented: _count.contracts > 0,
+      contractCount: _count.contracts,
     }));
     res.json(parsed);
   } catch (err) {

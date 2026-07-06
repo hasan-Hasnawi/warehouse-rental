@@ -35,6 +35,29 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+async function autoExpireContracts() {
+  try {
+    const now = new Date();
+    const expired = await prisma.contract.findMany({
+      where: { status: 'ACTIVE', endDate: { lt: now } },
+    });
+    for (const contract of expired) {
+      await prisma.contract.update({ where: { id: contract.id }, data: { status: 'EXPIRED' } });
+      await prisma.warehouse.update({ where: { id: contract.warehouseId }, data: { status: 'VACANT' } });
+      console.log(`Auto-expired contract ${contract.contractNo}`);
+    }
+    if (expired.length > 0) {
+      console.log(`Auto-expired ${expired.length} contracts`);
+    }
+  } catch (err) {
+    console.error('Auto-expire error:', err);
+  }
+}
+
+// Run at startup and every hour
+autoExpireContracts();
+setInterval(autoExpireContracts, 60 * 60 * 1000);
+
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);
   res.status(err.status || 500).json({ message: err.message || 'Internal server error' });

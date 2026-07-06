@@ -104,6 +104,14 @@ export async function create(req: AuthRequest, res: Response) {
   try {
     const data = contractSchema.parse(req.body);
 
+    // Check warehouse availability
+    const activeContract = await prisma.contract.findFirst({
+      where: { warehouseId: data.warehouseId, status: 'ACTIVE' },
+    });
+    if (activeContract) {
+      return res.status(400).json({ message: 'المخزن لديه بالفعل عقد نشط' });
+    }
+
     if (!data.isPreAgreed) {
       const now = new Date();
       if (data.startDate < now) {
@@ -118,27 +126,30 @@ export async function create(req: AuthRequest, res: Response) {
 
     const contractNo = `CTR-${Date.now().toString(36).toUpperCase()}`;
 
-    const contract = await prisma.contract.create({
-      data: { ...data, contractNo, status: 'ACTIVE' },
-      include: {
-        client: { select: { id: true, fullName: true } },
-        warehouse: { select: { id: true, name: true, code: true } },
-      },
-    });
+    const contract = await prisma.$transaction(async (tx) => {
+      const c = await tx.contract.create({
+        data: { ...data, contractNo, status: 'ACTIVE' },
+        include: {
+          client: { select: { id: true, fullName: true } },
+          warehouse: { select: { id: true, name: true, code: true } },
+        },
+      });
 
-    await prisma.warehouse.update({ where: { id: data.warehouseId }, data: { status: 'RENTED' } });
+      await tx.warehouse.update({ where: { id: data.warehouseId }, data: { status: 'RENTED' } });
 
-    // Auto-generate a payment record for the full rent amount
-    await prisma.payment.create({
-      data: {
-        contractId: contract.id,
-        clientId: data.clientId,
-        amount: data.rentAmount,
-        method: 'cash',
-        status: 'PENDING',
-        dueDate: data.startDate,
-        description: `دفعة عقد ${contractNo}`,
-      },
+      await tx.payment.create({
+        data: {
+          contractId: c.id,
+          clientId: data.clientId,
+          amount: data.rentAmount,
+          method: 'cash',
+          status: 'PENDING',
+          dueDate: data.startDate,
+          description: `دفعة عقد ${contractNo}`,
+        },
+      });
+
+      return c;
     });
 
     await logActivity({ userId: req.user!.id, action: 'CREATE_CONTRACT', entity: 'Contract', entityId: contract.id });
@@ -157,11 +168,36 @@ export async function create(req: AuthRequest, res: Response) {
 export async function update(req: AuthRequest, res: Response) {
   try {
     const data = contractSchema.partial().parse(req.body);
-    const contract = await prisma.contract.update({ where: { id: req.params.id }, data });
+    const existing = await prisma.contract.findUnique({ where: { id: req.params.id } });
+    if (!existing) return res.status(404).json({ message: 'Contract not found' });
+
+    const contract = await prisma.$transaction(async (tx) => {
+      if (data.warehouseId && data.warehouseId !== existing.warehouseId) {
+        const newWhActive = await tx.contract.findFirst({
+          where: { warehouseId: data.warehouseId, status: 'ACTIVE', id: { not: req.params.id } },
+        });
+        if (newWhActive) {
+          throw Object.assign(new Error('المخزن الجديد لديه عقد نشط بالفعل'), { status: 400 });
+        }
+
+        const otherActive = await tx.contract.findFirst({
+          where: { warehouseId: existing.warehouseId, status: 'ACTIVE', id: { not: req.params.id } },
+        });
+        if (!otherActive) {
+          await tx.warehouse.update({ where: { id: existing.warehouseId }, data: { status: 'VACANT' } });
+        }
+
+        await tx.warehouse.update({ where: { id: data.warehouseId }, data: { status: 'RENTED' } });
+      }
+
+      return tx.contract.update({ where: { id: req.params.id }, data });
+    });
+
     await logActivity({ userId: req.user!.id, action: 'UPDATE_CONTRACT', entity: 'Contract', entityId: contract.id });
     res.json(contract);
   } catch (err) {
     if (err instanceof z.ZodError) return res.status(400).json({ message: 'Validation error', errors: err.errors });
+    if ((err as any).status === 400) return res.status(400).json({ message: (err as Error).message });
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });
   }
@@ -185,9 +221,13 @@ export async function terminate(req: AuthRequest, res: Response) {
 
 export async function signByClient(req: AuthRequest, res: Response) {
   try {
-    const contract = await prisma.contract.update({
-      where: { id: req.params.id, clientId: req.user!.id },
-      data: { signedByClient: true, status: 'ACTIVE' },
+    const contract = await prisma.$transaction(async (tx) => {
+      const c = await tx.contract.update({
+        where: { id: req.params.id, clientId: req.user!.id },
+        data: { signedByClient: true, status: 'ACTIVE' },
+      });
+      await tx.warehouse.update({ where: { id: c.warehouseId }, data: { status: 'RENTED' } });
+      return c;
     });
     res.json({ message: 'Contract signed', contract });
   } catch (err) {

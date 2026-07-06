@@ -52,7 +52,7 @@ export default function GuardLayout({ children }: { children: React.ReactNode })
         </div>
         <nav className="p-4 space-y-1">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 text-gray-700 hover:text-gray-900 transition-colors">
+            <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 text-gray-700 hover:text-gray-900 transition-colors">
               <item.icon className="w-5 h-5" />
               <span>{item.label}</span>
             </Link>

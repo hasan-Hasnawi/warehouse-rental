@@ -57,11 +57,21 @@ export async function create(req: AuthRequest, res: Response) {
 
 export async function cancel(req: AuthRequest, res: Response) {
   try {
-    const booking = await prisma.booking.update({
+    const booking = await prisma.booking.findUnique({
       where: { id: req.params.id, clientId: req.user!.id },
-      data: { status: 'CANCELLED' },
     });
-    res.json(booking);
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+    await prisma.$transaction(async (tx) => {
+      await tx.booking.update({ where: { id: req.params.id }, data: { status: 'CANCELLED' } });
+      const activeContract = await tx.contract.findFirst({
+        where: { warehouseId: booking.warehouseId, status: 'ACTIVE' },
+      });
+      if (!activeContract) {
+        await tx.warehouse.update({ where: { id: booking.warehouseId }, data: { status: 'VACANT' } });
+      }
+    });
+    res.json({ message: 'Booking cancelled' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });
@@ -87,13 +97,24 @@ export async function approve(req: AuthRequest, res: Response) {
 
 export async function reject(req: AuthRequest, res: Response) {
   try {
-    const booking = await prisma.booking.update({
+    const booking = await prisma.booking.findUnique({
       where: { id: req.params.id },
-      data: { status: 'REJECTED' },
+      select: { warehouseId: true, clientId: true },
     });
-    await logActivity({ userId: req.user!.id, action: 'REJECT_BOOKING', entity: 'Booking', entityId: booking.id });
-    await notifyUser(booking.clientId, 'تم رفض الحجز', `تم رفض حجز المخزن`, 'alert', `/client/bookings`);
-    res.json(booking);
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+    await prisma.$transaction(async (tx) => {
+      await tx.booking.update({ where: { id: req.params.id }, data: { status: 'REJECTED' } });
+      const activeContract = await tx.contract.findFirst({
+        where: { warehouseId: booking.warehouseId, status: 'ACTIVE' },
+      });
+      if (!activeContract) {
+        await tx.warehouse.update({ where: { id: booking.warehouseId }, data: { status: 'VACANT' } });
+      }
+    });
+    await logActivity({ userId: req.user!.id, action: 'REJECT_BOOKING', entity: 'Booking', entityId: req.params.id });
+    await notifyUser(booking.clientId, 'تم رفض الحجز', 'تم رفض حجز المخزن', 'alert', `/client/bookings`);
+    res.json({ message: 'Booking rejected' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });

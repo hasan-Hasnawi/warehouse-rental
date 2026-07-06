@@ -52,6 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => setSidebarOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-yellow-100 text-gray-700 hover:text-yellow-900 transition-all duration-200"
             >
               <item.icon className="w-5 h-5 text-yellow-600" />

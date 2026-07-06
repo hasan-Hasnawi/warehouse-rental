@@ -40,14 +40,14 @@ async function main() {
 
   const w1 = await prisma.warehouse.upsert({
     where: { code: 'WH-001' },
-    update: { guardId: guard.id, groupId: groupA.id, pricePer6Months: 9000000 },
-    create: { name: 'مخزن المنطقة الصناعية أ', code: 'WH-001', description: 'مخزن كبير في المنطقة الصناعية', area: 500, address: 'المنطقة الصناعية، شارع 15', city: 'بغداد', pricePerMonth: 1500000, pricePer6Months: 9000000, guardId: guard.id, groupId: groupA.id, features: JSON.stringify(['24h_security', 'cctv', 'loading_dock', 'ventilation']) },
+    update: { guardId: guard.id, groupId: groupA.id, pricePer6Months: 9000000, status: 'RENTED' },
+    create: { name: 'مخزن المنطقة الصناعية أ', code: 'WH-001', description: 'مخزن كبير في المنطقة الصناعية', area: 500, address: 'المنطقة الصناعية، شارع 15', city: 'بغداد', pricePerMonth: 1500000, pricePer6Months: 9000000, guardId: guard.id, groupId: groupA.id, status: 'RENTED', features: JSON.stringify(['24h_security', 'cctv', 'loading_dock', 'ventilation']) },
   });
 
   const w2 = await prisma.warehouse.upsert({
     where: { code: 'WH-002' },
-    update: { guardId: guard.id, groupId: groupA.id, pricePer6Months: 5400000 },
-    create: { name: 'مخزن شارع المطار', code: 'WH-002', description: 'مخزن متوسط قرب مطار بغداد', area: 300, address: 'شارع المطار، مجمع الأعمال', city: 'بغداد', pricePerMonth: 900000, pricePer6Months: 5400000, guardId: guard.id, groupId: groupA.id, features: JSON.stringify(['cctv', 'fire_safety']) },
+    update: { guardId: guard.id, groupId: groupA.id, pricePer6Months: 5400000, status: 'RENTED' },
+    create: { name: 'مخزن شارع المطار', code: 'WH-002', description: 'مخزن متوسط قرب مطار بغداد', area: 300, address: 'شارع المطار، مجمع الأعمال', city: 'بغداد', pricePerMonth: 900000, pricePer6Months: 5400000, guardId: guard.id, groupId: groupA.id, status: 'RENTED', features: JSON.stringify(['cctv', 'fire_safety']) },
   });
 
   const w3 = await prisma.warehouse.upsert({
