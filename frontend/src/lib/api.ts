@@ -96,6 +96,7 @@ export const api = {
     signByClient: (id: string) => mutate<any>(`/contracts/${id}/sign-client`, { method: 'POST' }, 'contract:sign'),
     signByAdmin: (id: string) => mutate<any>(`/contracts/${id}/sign-admin`, { method: 'POST' }, 'contract:sign'),
     expiring: () => request<{ expiring: any[]; expired: any[] }>('/contracts/expiring'),
+    deleteContract: (id: string) => mutate<any>(`/contracts/${id}`, { method: 'DELETE' }, 'contract:delete'),
   },
   admin: {
     listUsers: (role?: string) => request<any[]>(`/auth/users${role ? `?role=${role}` : ''}`),

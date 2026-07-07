@@ -6,7 +6,7 @@ import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { FileDown, Plus, Filter } from 'lucide-react'
+import { FileDown, Plus, Filter, RefreshCw, Trash2, Printer } from 'lucide-react'
 import { exportToExcel, exportToPDF } from '@/lib/export'
 import WhatsAppButton from '@/components/WhatsAppButton'
 
@@ -60,6 +60,18 @@ export default function AdminContractsPage() {
     if (!confirm('هل أنت متأكد من إنهاء هذا العقد؟')) return
     try { await api.contracts.terminate(id); setContracts(contracts.map(c => c.id === id ? { ...c, status: 'TERMINATED' } : c)) }
     catch (err: any) { alert(err.message) }
+  }
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!confirm('هل أنت متأكد من حذف هذا العقد؟ لا يمكن التراجع عن هذا الإجراء')) return
+    try { await api.contracts.deleteContract(id); setContracts(contracts.filter(c => c.id !== id)) }
+    catch (err: any) { alert(err.message) }
+  }
+
+  const handleRenew = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    router.push(`/admin/contracts/create?renew=${id}`)
   }
 
   return (
@@ -124,6 +136,9 @@ export default function AdminContractsPage() {
                     {c.isPreAgreed && <Badge className="bg-orange-100 text-orange-700 text-xs">متفق عليه سابقاً</Badge>}
                   </div>
                   <div className="flex items-center gap-1">
+                    <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); router.push(`/admin/contracts/${c.id}/print`) }}>
+                      <Printer className="w-3.5 h-3.5" />
+                    </Button>
                     <WhatsAppButton
                       phone={c.clientPhone || c.client?.phone || ''}
                       name={c.client?.fullName || ''}
@@ -132,6 +147,15 @@ export default function AdminContractsPage() {
                     />
                     {c.status === 'ACTIVE' && (
                       <Button variant="destructive" size="sm" onClick={(e) => handleTerminate(c.id, e)}>إنهاء</Button>
+                    )}
+                    {c.status === 'EXPIRED' && (
+                      <>
+                        <Button size="sm" onClick={(e) => handleRenew(c.id, e)} className="bg-blue-600 hover:bg-blue-700"><RefreshCw className="w-3.5 h-3.5 ml-1" /> تجديد</Button>
+                        <Button variant="destructive" size="sm" onClick={(e) => handleDelete(c.id, e)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                      </>
+                    )}
+                    {c.status === 'TERMINATED' && (
+                      <Button variant="destructive" size="sm" onClick={(e) => handleDelete(c.id, e)}><Trash2 className="w-3.5 h-3.5" /></Button>
                     )}
                   </div>
                 </div>

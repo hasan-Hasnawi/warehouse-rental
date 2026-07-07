@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, FileText, User, Warehouse, Calendar, DollarSign, BadgePercent, Shield, Phone, Package, CreditCard, Plus } from 'lucide-react'
+import { ArrowLeft, FileText, User, Warehouse, Calendar, DollarSign, BadgePercent, Shield, Phone, Package, CreditCard, Plus, Trash2, Printer } from 'lucide-react'
 import WhatsAppButton from '@/components/WhatsAppButton'
 
 const statusColor: Record<string, string> = { ACTIVE: 'bg-green-100 text-green-700', EXPIRED: 'bg-gray-100 text-gray-700', TERMINATED: 'bg-red-100 text-red-700', PENDING: 'bg-yellow-100 text-yellow-700' }
@@ -58,6 +58,12 @@ export default function AdminContractDetailPage() {
     finally { setPayLoading(false) }
   }
 
+  const handleDelete = async () => {
+    if (!confirm('هل أنت متأكد من حذف هذا العقد؟ لا يمكن التراجع عن هذا الإجراء')) return
+    try { await api.contracts.deleteContract(params.id as string); router.push('/admin/contracts') }
+    catch (err: any) { alert(err.message) }
+  }
+
   if (!contract) return <div className="text-center text-gray-500 py-12">جاري التحميل...</div>
 
   const remainingPct = contract.rentAmount > 0 ? (contract.remainingAmount / contract.rentAmount) * 100 : 0
@@ -72,12 +78,16 @@ export default function AdminContractDetailPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5" /> {contract.contractNo}</CardTitle>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => router.push(`/admin/contracts/${params.id}/print`)}><Printer className="w-4 h-4" /></Button>
             <WhatsAppButton
               phone={contract.clientPhone || contract.client?.phone || ''}
               name={contract.client?.fullName || ''}
               defaultCategory="contracts"
               presetFields={{ amount: String(contract.rentAmount || ''), contractNo: contract.contractNo, warehouse: contract.warehouse?.name || '', date: new Date(contract.endDate).toLocaleDateString('ar-IQ') }}
             />
+            {(contract.status === 'EXPIRED' || contract.status === 'TERMINATED') && (
+              <Button variant="destructive" size="sm" onClick={handleDelete}><Trash2 className="w-4 h-4 ml-1" /> حذف</Button>
+            )}
             <Badge className={statusColor[contract.status]}>{statusText[contract.status]}</Badge>
           </div>
         </CardHeader>

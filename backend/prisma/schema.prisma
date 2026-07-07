@@ -283,6 +283,11 @@ model ActivityLog {
   @@index([createdAt])
 }
 
+model ContractCounter {
+  id    String @id @default("singleton")
+  nextNo Int    @default(1)
+}
+
 model SystemSetting {
   id    String @id @default(cuid())
   key   String @unique

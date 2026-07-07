@@ -124,9 +124,14 @@ export async function create(req: AuthRequest, res: Response) {
       }
     }
 
-    const contractNo = `CTR-${Date.now().toString(36).toUpperCase()}`;
-
     const contract = await prisma.$transaction(async (tx) => {
+      const counter = await tx.contractCounter.upsert({
+        where: { id: 'singleton' },
+        create: { id: 'singleton', nextNo: 1 },
+        update: { nextNo: { increment: 1 } },
+      });
+      const contractNo = `CTR-${String(counter.nextNo - 1).padStart(4, '0')}`;
+
       const c = await tx.contract.create({
         data: { ...data, contractNo, status: 'ACTIVE' },
         include: {
@@ -213,6 +218,22 @@ export async function terminate(req: AuthRequest, res: Response) {
     await logActivity({ userId: req.user!.id, action: 'TERMINATE_CONTRACT', entity: 'Contract', entityId: contract.id });
     await notifyUser(contract.clientId, 'تم إنهاء العقد', `تم إنهاء العقد ${contract.contractNo}`, 'alert', `/client/contracts/${contract.id}`);
     res.json({ message: 'Contract terminated' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+export async function deleteContract(req: AuthRequest, res: Response) {
+  try {
+    const contract = await prisma.contract.findUnique({ where: { id: req.params.id } });
+    if (!contract) return res.status(404).json({ message: 'Contract not found' });
+    if (contract.status !== 'EXPIRED' && contract.status !== 'TERMINATED') {
+      return res.status(400).json({ message: 'يمكن حذف العقود المنتهية أو الملغاة فقط' });
+    }
+    await prisma.contract.delete({ where: { id: req.params.id } });
+    await logActivity({ userId: req.user!.id, action: 'DELETE_CONTRACT', entity: 'Contract', entityId: req.params.id });
+    res.json({ message: 'Contract deleted' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });

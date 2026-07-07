@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from '@/i18n/navigation'
+import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +13,7 @@ import { Shield, Layers, DollarSign, CalendarDays, BadgePercent, UserCheck, Phon
 
 export default function CreateContractPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [clients, setClients] = useState<any[]>([])
   const [warehouses, setWarehouses] = useState<any[]>([])
   const [selectedWarehouse, setSelectedWarehouse] = useState<any>(null)
@@ -27,6 +29,26 @@ export default function CreateContractPage() {
   const [storedMaterials, setStoredMaterials] = useState('')
   const [warehouseId, setWarehouseId] = useState('')
   const [loading, setLoading] = useState(false)
+  const [renewLoading, setRenewLoading] = useState(false)
+
+  useEffect(() => {
+    const renewId = searchParams.get('renew')
+    if (renewId) {
+      setRenewLoading(true)
+      api.contracts.getById(renewId).then(old => {
+        setClientId(old.clientId)
+        setWarehouseId(old.warehouseId)
+        setDiscount(String(old.discount || 0))
+        setGuardFeeMonthly(String(old.guardFeeMonthly || 0))
+        setIsPreAgreed(true)
+        setNotes(old.notes || '')
+        setClientPhone(old.clientPhone || '')
+        setClientPhone2(old.clientPhone2 || '')
+        setStoredMaterials(old.storedMaterials || '')
+        setDurationMonths('6')
+      }).catch(console.error).finally(() => setRenewLoading(false))
+    }
+  }, [searchParams])
 
   useEffect(() => {
     api.admin.listUsers('CLIENT').then(setClients).catch(console.error)
@@ -114,8 +136,9 @@ export default function CreateContractPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">إنشاء عقد جديد</h1>
-        <p className="text-gray-500">أدخل تفاصيل العقد الجديد</p>
+        <h1 className="text-2xl font-bold">{searchParams.get('renew') ? 'تجديد عقد' : 'إنشاء عقد جديد'}</h1>
+        <p className="text-gray-500">{searchParams.get('renew') ? 'تم تعبئة بيانات العقد السابق، يرجى تعديل التواريخ' : 'أدخل تفاصيل العقد الجديد'}</p>
+        {renewLoading && <p className="text-blue-600 text-sm mt-1">جاري تحميل بيانات العقد السابق...</p>}
       </div>
 
       <Card>
