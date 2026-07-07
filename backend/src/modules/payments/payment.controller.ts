@@ -145,6 +145,43 @@ export async function getDashboard(req: AuthRequest, res: Response) {
   }
 }
 
+export async function getDashboardDetails(req: AuthRequest, res: Response) {
+  try {
+    const now = new Date();
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const { startDate, endDate } = req.query as { startDate?: string; endDate?: string };
+
+    const [allPaid, yearlyPaid, monthlyPaid, pendingSum, overdueSum, customPaid] = await Promise.all([
+      prisma.payment.aggregate({ _sum: { amount: true }, where: { status: 'PAID' } }),
+      prisma.payment.aggregate({ _sum: { amount: true }, where: { status: 'PAID', paidAt: { gte: yearStart } } }),
+      prisma.payment.aggregate({ _sum: { amount: true }, where: { status: 'PAID', paidAt: { gte: monthStart } } }),
+      prisma.payment.aggregate({ _sum: { amount: true }, where: { status: 'PENDING' } }),
+      prisma.payment.aggregate({ _sum: { amount: true }, where: { status: 'OVERDUE' } }),
+      startDate && endDate
+        ? prisma.payment.aggregate({ _sum: { amount: true }, where: { status: 'PAID', paidAt: { gte: new Date(startDate), lte: new Date(endDate) } } })
+        : Promise.resolve({ _sum: { amount: null } }),
+    ]);
+
+    const paid = allPaid._sum.amount || 0;
+    const unpaid = (pendingSum._sum.amount || 0) + (overdueSum._sum.amount || 0);
+
+    res.json({
+      total: paid,
+      yearly: yearlyPaid._sum.amount || 0,
+      monthly: monthlyPaid._sum.amount || 0,
+      custom: customPaid._sum.amount || 0,
+      paid,
+      unpaid,
+      grandTotal: paid + unpaid,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
 export async function getMethods(_req: AuthRequest, res: Response) {
   res.json(getPaymentMethods());
 }

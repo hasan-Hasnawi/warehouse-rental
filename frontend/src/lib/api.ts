@@ -108,6 +108,7 @@ export const api = {
     getById: (id: string) => request<any>(`/payments/${id}`),
     create: (data: any) => mutate<any>('/payments', { method: 'POST', body: JSON.stringify(data) }, 'payment:create'),
     dashboard: () => request<any>('/payments/dashboard'),
+    dashboardDetails: (params?: string) => request<any>(`/payments/details${params ? `?${params}` : ''}`),
     getMethods: () => request<any[]>('/payments/methods'),
     pay: (paymentId: string, method: string) =>
       mutate<{ success: boolean; referenceNo: string; message: string }>('/payments/pay', {

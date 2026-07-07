@@ -5,13 +5,20 @@ import { useRouter } from '@/i18n/navigation'
 import { api } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Building2, DollarSign, Clock, AlertTriangle, Bell, X } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Building2, DollarSign, Clock, AlertTriangle, Bell, X, TrendingUp, Calendar, BarChart3, Filter } from 'lucide-react'
 import WhatsAppButton from '@/components/WhatsAppButton'
 
 export default function AdminDashboard() {
   const [data, setData] = useState<any>(null)
   const [alerts, setAlerts] = useState<{ expiring: any[]; expired: any[] }>({ expiring: [], expired: [] })
   const [showExpiredModal, setShowExpiredModal] = useState(false)
+  const [showRevenueModal, setShowRevenueModal] = useState(false)
+  const [revenueDetails, setRevenueDetails] = useState<any>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [customStart, setCustomStart] = useState('')
+  const [customEnd, setCustomEnd] = useState('')
+  const [customResult, setCustomResult] = useState<number | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -19,8 +26,26 @@ export default function AdminDashboard() {
     api.contracts.expiring().then(setAlerts).catch(console.error)
   }, [])
 
+  const openRevenueModal = async () => {
+    setShowRevenueModal(true)
+    setDetailLoading(true)
+    try {
+      const result = await api.payments.dashboardDetails()
+      setRevenueDetails(result)
+    } catch (err) { console.error(err) }
+    finally { setDetailLoading(false) }
+  }
+
+  const handleCustomFilter = async () => {
+    if (!customStart || !customEnd) return
+    try {
+      const result = await api.payments.dashboardDetails(`startDate=${customStart}&endDate=${customEnd}`)
+      setCustomResult(result.custom)
+    } catch (err) { console.error(err) }
+  }
+
   const stats = [
-    { label: 'الإيرادات الإجمالية', value: data?.totalRevenue?.toLocaleString() || '0', icon: DollarSign, color: 'text-teal-600', bg: 'bg-teal-50' },
+    { label: 'الإيرادات الإجمالية', value: data?.totalRevenue?.toLocaleString() || '0', icon: DollarSign, color: 'text-teal-600', bg: 'bg-teal-50', onClick: openRevenueModal },
     { label: 'المدفوعات المعلقة', value: data?.pendingRevenue?.toLocaleString() || '0', icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-50' },
     { label: 'مدفوعات متأخرة', value: data?.overduePayments || '0', icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50' },
     { label: 'نسبة الإشغال', value: `${Math.round(data?.occupancyRate || 0)}%`, icon: Building2, color: 'text-yellow-700', bg: 'bg-yellow-50' },
@@ -61,7 +86,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
-          <Card key={stat.label} className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <Card key={stat.label} className={`transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${stat.onClick ? 'cursor-pointer' : ''}`} onClick={stat.onClick}>
             <CardContent className={`p-6 ${stat.bg} rounded-lg`}>
               <div className="flex items-center justify-between">
                 <div>
@@ -115,6 +140,62 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {showRevenueModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => { setShowRevenueModal(false); setCustomResult(null) }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b">
+              <h2 className="text-lg font-bold flex items-center gap-2"><TrendingUp className="w-5 h-5 text-teal-600" /> تفاصيل الإيرادات</h2>
+              <button onClick={() => { setShowRevenueModal(false); setCustomResult(null) }} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              {detailLoading ? (
+                <p className="text-center text-gray-500 py-8">جاري التحميل...</p>
+              ) : revenueDetails && (
+                <>
+                  <div className="p-4 bg-teal-50 rounded-xl border border-teal-200">
+                    <div className="flex items-center gap-2 text-teal-700 font-bold mb-1"><BarChart3 className="w-4 h-4" /> الإيرادات الإجمالية الكاملة</div>
+                    <p className="text-2xl font-bold text-teal-600">{revenueDetails.total.toLocaleString()} د.ع</p>
+                  </div>
+                  <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                    <div className="flex items-center gap-2 text-blue-700 font-bold mb-1"><Calendar className="w-4 h-4" /> الإيرادات السنوية ({new Date().getFullYear()})</div>
+                    <p className="text-2xl font-bold text-blue-600">{revenueDetails.yearly.toLocaleString()} د.ع</p>
+                  </div>
+                  <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
+                    <div className="flex items-center gap-2 text-purple-700 font-bold mb-1"><Calendar className="w-4 h-4" /> الإيرادات الشهرية ({new Date().toLocaleDateString('ar-IQ', { month: 'long' })})</div>
+                    <p className="text-2xl font-bold text-purple-600">{revenueDetails.monthly.toLocaleString()} د.ع</p>
+                  </div>
+                  <div className="p-4 bg-orange-50 rounded-xl border border-orange-200">
+                    <div className="flex items-center gap-2 text-orange-700 font-bold mb-2"><Filter className="w-4 h-4" /> إيرادات فترة مخصصة</div>
+                    <div className="flex gap-2 mb-2">
+                      <Input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-sm" />
+                      <Input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-sm" />
+                      <Button size="sm" onClick={handleCustomFilter} disabled={!customStart || !customEnd}>عرض</Button>
+                    </div>
+                    {customResult !== null && (
+                      <p className="text-lg font-bold text-orange-600">{customResult.toLocaleString()} د.ع</p>
+                    )}
+                  </div>
+                  <div className="border-t pt-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>المبالغ المسددة</span>
+                      <span className="font-bold text-green-600">{revenueDetails.paid.toLocaleString()} د.ع</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>المبالغ غير المسددة</span>
+                      <span className="font-bold text-red-600">{revenueDetails.unpaid.toLocaleString()} د.ع</span>
+                    </div>
+                    <div className="flex justify-between text-sm pt-2 border-t font-bold">
+                      <span>المجموع الكلي</span>
+                      <span className="text-teal-600">{revenueDetails.grandTotal.toLocaleString()} د.ع</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {showExpiredModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowExpiredModal(false)}>
