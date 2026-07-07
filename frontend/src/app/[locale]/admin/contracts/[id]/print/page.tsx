@@ -68,7 +68,6 @@ export default function PrintContractPage() {
               <p className="text-sm font-semibold">{contract.warehouse?.name}</p>
               <p className="text-xs text-gray-600">كود: {contract.warehouse?.code} | {contract.warehouse?.city}</p>
               <p className="text-xs text-gray-600">{contract.warehouse?.address}{contract.warehouse?.area ? ` (${contract.warehouse.area} م²)` : ''}</p>
-              {contract.warehouse?.group && <p className="text-xs text-gray-600">المجموعة: {contract.warehouse.group.name}{contract.warehouse.group.investorName ? ` | مستثمر: ${contract.warehouse.group.investorName}` : ''}</p>}
             </div>
           </div>
 
