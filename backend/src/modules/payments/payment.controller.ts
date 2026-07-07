@@ -149,6 +149,27 @@ export async function getMethods(_req: AuthRequest, res: Response) {
   res.json(getPaymentMethods());
 }
 
+export async function cancelPayment(req: AuthRequest, res: Response) {
+  try {
+    const payment = await prisma.payment.findUnique({ where: { id: req.params.id } });
+    if (!payment) return res.status(404).json({ message: 'Payment not found' });
+    if (payment.status !== 'PENDING') {
+      return res.status(400).json({ message: `Cannot cancel a ${payment.status.toLowerCase()} payment` });
+    }
+
+    const updated = await prisma.payment.update({
+      where: { id: req.params.id },
+      data: { status: 'CANCELLED' },
+    });
+    await logActivity({ userId: req.user!.id, action: 'CANCEL_PAYMENT', entity: 'Payment', entityId: payment.id });
+    await notifyUser(payment.clientId, 'تم إلغاء الدفعة', `تم إلغاء الدفعة ${payment.amount} دينار`, 'info', `/client/payments`);
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
 export async function initiatePayment(req: AuthRequest, res: Response) {
   try {
     const { paymentId, method } = z.object({

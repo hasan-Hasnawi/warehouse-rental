@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { list, create, getById, getDashboard, getMethods, initiatePayment, markAsPaid } from './payment.controller';
+import { list, create, getById, getDashboard, getMethods, initiatePayment, markAsPaid, cancelPayment } from './payment.controller';
 import { authenticate, authorize } from '../../middleware/auth';
 
 const router = Router();
@@ -11,5 +11,6 @@ router.get('/:id', authenticate, getById);
 router.post('/', authenticate, create);
 router.post('/pay', authenticate, initiatePayment);
 router.post('/:id/mark-paid', authenticate, authorize('ADMIN'), markAsPaid);
+router.post('/:id/cancel', authenticate, authorize('ADMIN'), cancelPayment);
 
 export default router;

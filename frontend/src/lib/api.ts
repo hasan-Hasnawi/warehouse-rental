@@ -115,6 +115,7 @@ export const api = {
         body: JSON.stringify({ paymentId, method }),
       }, 'payment:pay'),
     markAsPaid: (id: string) => mutate<any>(`/payments/${id}/mark-paid`, { method: 'POST' }, 'payment:markPaid'),
+    cancel: (id: string) => mutate<any>(`/payments/${id}/cancel`, { method: 'POST' }, 'payment:cancel'),
   },
   guards: {
     logAccess: (data: any) => mutate<any>('/guards/access', { method: 'POST', body: JSON.stringify(data) }, 'guard:access'),

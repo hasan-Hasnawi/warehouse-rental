@@ -7,7 +7,7 @@ import { api } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, CreditCard, User, FileText, Calendar, DollarSign, CheckCircle, Loader2 } from 'lucide-react'
+import { ArrowLeft, CreditCard, User, FileText, Calendar, DollarSign, CheckCircle, Loader2, XCircle } from 'lucide-react'
 
 const statusColor: Record<string, string> = { PAID: 'bg-green-100 text-green-700', PENDING: 'bg-yellow-100 text-yellow-700', OVERDUE: 'bg-red-100 text-red-700', CANCELLED: 'bg-gray-100 text-gray-700' }
 const statusText: Record<string, string> = { PAID: 'مدفوع', PENDING: 'معلق', OVERDUE: 'متأخر', CANCELLED: 'ملغي' }
@@ -17,6 +17,7 @@ export default function AdminPaymentDetailPage() {
   const router = useRouter()
   const [payment, setPayment] = useState<any>(null)
   const [marking, setMarking] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
 
   useEffect(() => {
     if (!params.id) return
@@ -32,6 +33,17 @@ export default function AdminPaymentDetailPage() {
       setPayment(updated)
     } catch (err: any) { alert(err.message) }
     finally { setMarking(false) }
+  }
+
+  const handleCancel = async () => {
+    if (!confirm('هل أنت متأكد من إلغاء الدفعة؟')) return
+    setCancelling(true)
+    try {
+      await api.payments.cancel(params.id as string)
+      const updated = await api.payments.getById(params.id as string)
+      setPayment(updated)
+    } catch (err: any) { alert(err.message) }
+    finally { setCancelling(false) }
   }
 
   if (!payment) return <div className="text-center text-gray-500 py-12">جاري التحميل...</div>
@@ -77,9 +89,14 @@ export default function AdminPaymentDetailPage() {
           )}
           {payment.description && <p className="text-sm text-gray-500">{payment.description}</p>}
           {payment.status === 'PENDING' && (
-            <Button onClick={handleMarkPaid} disabled={marking} className="w-full bg-green-600 hover:bg-green-700">
-              {marking ? <><Loader2 className="w-4 h-4 ml-2 animate-spin" /> جاري...</> : 'تأكيد الدفع يدوياً (نقدي)'}
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleMarkPaid} disabled={marking || cancelling} className="flex-1 bg-green-600 hover:bg-green-700">
+                {marking ? <><Loader2 className="w-4 h-4 ml-2 animate-spin" /> جاري...</> : <><CheckCircle className="w-4 h-4 ml-1" /> تأكيد الدفع يدوياً (نقدي)</>}
+              </Button>
+              <Button onClick={handleCancel} disabled={marking || cancelling} variant="outline" className="flex-1 border-red-300 text-red-600 hover:bg-red-50">
+                {cancelling ? <><Loader2 className="w-4 h-4 ml-2 animate-spin" /> جاري...</> : <><XCircle className="w-4 h-4 ml-1" /> عدم استلام الدفعة</>}
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>

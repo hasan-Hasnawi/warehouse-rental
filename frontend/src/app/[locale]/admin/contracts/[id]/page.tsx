@@ -25,7 +25,7 @@ export default function AdminContractDetailPage() {
   const [payAmount, setPayAmount] = useState('')
   const [payMethod, setPayMethod] = useState('cash')
   const [payDesc, setPayDesc] = useState('')
-  const [payDueDate, setPayDueDate] = useState('')
+  const [payDueDate, setPayDueDate] = useState(new Date().toISOString().split('T')[0])
   const [payLoading, setPayLoading] = useState(false)
 
   const loadContract = () => {
