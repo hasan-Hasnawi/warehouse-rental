@@ -133,9 +133,37 @@ export async function update(req: AuthRequest, res: Response) {
 
 export async function remove(req: AuthRequest, res: Response) {
   try {
-    await prisma.warehouse.delete({ where: { id: req.params.id } });
+    const warehouse = await prisma.warehouse.findUnique({
+      where: { id: req.params.id },
+      include: { contracts: { select: { id: true, status: true } }, bookings: { select: { id: true } } },
+    });
+    if (!warehouse) return res.status(404).json({ message: 'المخزن غير موجود' });
+
+    const activeContracts = warehouse.contracts.filter((c) => c.status === 'ACTIVE');
+    if (activeContracts.length > 0) {
+      return res.status(400).json({ message: 'لا يمكن حذف المخزن لأنه يحتوي على عقود نشطة. قم بإنهاء العقود أولاً' });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.booking.deleteMany({ where: { warehouseId: req.params.id } });
+
+      const contractIds = warehouse.contracts.map((c) => c.id);
+      if (contractIds.length > 0) {
+        await tx.payment.deleteMany({ where: { contractId: { in: contractIds } } });
+        await tx.contract.deleteMany({ where: { id: { in: contractIds } } });
+      }
+
+      await tx.accessLog.updateMany({ where: { warehouseId: req.params.id }, data: { warehouseId: null } });
+      await tx.guardTask.updateMany({ where: { warehouseId: req.params.id }, data: { warehouseId: null } });
+      await tx.inventory.updateMany({ where: { warehouseId: req.params.id }, data: { warehouseId: null } });
+      await tx.guardReport.updateMany({ where: { warehouseId: req.params.id }, data: { warehouseId: null } });
+      await tx.extraService.updateMany({ where: { warehouseId: req.params.id }, data: { warehouseId: null } });
+
+      await tx.warehouse.delete({ where: { id: req.params.id } });
+    });
+
     await logActivity({ userId: req.user!.id, action: 'DELETE', entity: 'Warehouse', entityId: req.params.id });
-    res.json({ message: 'Deleted successfully' });
+    res.json({ message: 'تم حذف المخزن بنجاح' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });
