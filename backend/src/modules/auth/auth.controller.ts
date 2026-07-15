@@ -12,7 +12,7 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 const registerSchema = z.object({
   email: z.string().email().optional(),
-  username: z.string().min(3).optional(),
+  username: z.string().min(3).optional().or(z.literal('')),
   password: z.string().min(6),
   fullName: z.string().min(2),
   phone: z.string().min(8),
@@ -190,7 +190,7 @@ export async function updateUser(req: AuthRequest, res: Response) {
     const schema = z.object({
       fullName: z.string().min(2).optional(),
       email: z.string().email().optional(),
-      username: z.string().min(3).optional(),
+      username: z.string().min(3).optional().or(z.literal('')),
       phone: z.string().min(8).optional(),
       password: z.string().min(6).optional(),
       role: z.enum(['ADMIN', 'CLIENT', 'GUARD']).optional(),

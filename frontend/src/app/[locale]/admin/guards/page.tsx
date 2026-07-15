@@ -27,7 +27,8 @@ export default function AdminGuardsPage() {
   const handleSubmit = async () => {
     try {
       if (editingId) {
-        const { password, ...data } = form
+        const { password, ...dataRaw } = form
+        const data = cleanForm(dataRaw)
         await api.admin.updateUser(editingId, password ? { ...data, password } : data)
       } else {
         await api.admin.createUser({ ...form, role: 'GUARD' })
@@ -45,6 +46,12 @@ export default function AdminGuardsPage() {
     if (!confirm('هل أنت متأكد من حذف هذا الحارس؟')) return
     try { await api.admin.deleteUser(id); load() }
     catch (err: any) { alert(err.message) }
+  }
+
+  const cleanForm = (data: any) => {
+    const out: any = { fullName: data.fullName, phone: data.phone }
+    if (data.username) out.username = data.username
+    return out
   }
 
   const toggleActive = async (g: any) => {

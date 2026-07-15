@@ -219,6 +219,7 @@ export async function deleteContract(req: AuthRequest, res: Response) {
     if (contract.status !== 'EXPIRED' && contract.status !== 'TERMINATED') {
       return res.status(400).json({ message: 'يمكن حذف العقود المنتهية أو الملغاة فقط' });
     }
+    await prisma.payment.deleteMany({ where: { contractId: req.params.id } });
     await prisma.contract.delete({ where: { id: req.params.id } });
     await logActivity({ userId: req.user!.id, action: 'DELETE_CONTRACT', entity: 'Contract', entityId: req.params.id });
     res.json({ message: 'Contract deleted' });

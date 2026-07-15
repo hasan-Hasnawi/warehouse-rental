@@ -150,7 +150,7 @@ export const api = {
     unreadCount: () => request<{ count: number }>('/notifications/unread-count'),
     markAsRead: (id: string) => request<any>(`/notifications/${id}/read`, { method: 'PUT' }),
     markAllAsRead: () => request<any>('/notifications/read-all', { method: 'PUT' }),
-    delete: (ids: string[]) => mutate<any>('/notifications/delete', { method: 'POST', body: JSON.stringify({ ids }) }, 'notification:delete'),
+    delete: (ids: string[]) => request<any>('/notifications/delete', { method: 'POST', body: JSON.stringify({ ids }) }),
   },
   inventory: {
     list: () => request<any[]>('/inventory'),

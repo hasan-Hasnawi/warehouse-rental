@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Shield, Phone, Mail, Warehouse, ClipboardList, Plus, CheckCircle, XCircle, Edit2 } from 'lucide-react'
+import { ArrowLeft, Shield, Phone, Mail, Warehouse, ClipboardList, Plus, CheckCircle, XCircle, Edit2, Save, X } from 'lucide-react'
 
 const priorityColor: Record<string, string> = {
   low: 'bg-gray-100 text-gray-600',
@@ -48,12 +48,18 @@ export default function GuardDetailPage() {
   const [showTaskForm, setShowTaskForm] = useState(false)
   const [taskForm, setTaskForm] = useState({ title: '', description: '', priority: 'normal', warehouseId: '' })
   const [taskLoading, setTaskLoading] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editForm, setEditForm] = useState({ fullName: '', username: '', phone: '', password: '' })
+  const [editLoading, setEditLoading] = useState(false)
 
   const load = () => {
     if (!params.id) return
     api.admin.listUsers('GUARD').then(users => {
       const g = users.find((u: any) => u.id === params.id)
-      if (g) setGuard(g)
+      if (g) {
+        setGuard(g)
+        setEditForm({ fullName: g.fullName, username: g.username || '', phone: g.phone || '', password: '' })
+      }
       else router.push('/admin/guards')
     }).catch(() => router.push('/admin/guards'))
 
@@ -88,6 +94,19 @@ export default function GuardDetailPage() {
     } catch (err: any) { alert(err.message) }
   }
 
+  const handleEditSave = async () => {
+    setEditLoading(true)
+    try {
+      const data: any = { fullName: editForm.fullName, phone: editForm.phone }
+      if (editForm.username) data.username = editForm.username
+      if (editForm.password) data.password = editForm.password
+      await api.admin.updateUser(params.id as string, data)
+      setEditing(false)
+      load()
+    } catch (err: any) { alert(err.message) }
+    finally { setEditLoading(false) }
+  }
+
   if (!guard) return <div className="text-center text-gray-500 py-12">جاري التحميل...</div>
 
   return (
@@ -100,26 +119,47 @@ export default function GuardDetailPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-amber-500" /> {guard.fullName}</CardTitle>
-            <Button variant="outline" size="sm" onClick={() => router.push('/admin/guards')} className="flex items-center gap-1">
-              <Edit2 className="w-4 h-4" /> تعديل
-            </Button>
+            {!editing && (
+              <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="flex items-center gap-1">
+                <Edit2 className="w-4 h-4" /> تعديل
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-              <Mail className="w-5 h-5 text-gray-400" />
-              <div><p className="text-xs text-gray-500">البريد</p><p className="font-medium">{guard.email}</p></div>
+          {editing ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label>الاسم</Label><Input value={editForm.fullName} onChange={e => setEditForm({ ...editForm, fullName: e.target.value })} /></div>
+                <div className="space-y-2"><Label>اسم المستخدم</Label><Input value={editForm.username} onChange={e => setEditForm({ ...editForm, username: e.target.value })} dir="ltr" /></div>
+                <div className="space-y-2"><Label>رقم الهاتف</Label><Input value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} /></div>
+                <div className="space-y-2"><Label>كلمة المرور (اتركه فارغاً إن لم ترد التغيير)</Label><Input type="password" value={editForm.password} onChange={e => setEditForm({ ...editForm, password: e.target.value })} /></div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleEditSave} disabled={editLoading}>{editLoading ? 'جاري...' : 'حفظ التغييرات'}</Button>
+                <Button variant="outline" onClick={() => { setEditing(false); setEditForm({ fullName: guard.fullName, username: guard.username || '', phone: guard.phone || '', password: '' }) }}><X className="w-4 h-4 ml-1" /> إلغاء</Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-              <Phone className="w-5 h-5 text-gray-400" />
-              <div><p className="text-xs text-gray-500">الهاتف</p><p className="font-medium">{guard.phone}</p></div>
+          ) : (
+            <div className="grid grid-cols-3 gap-4">
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                <Mail className="w-5 h-5 text-gray-400" />
+                <div><p className="text-xs text-gray-500">البريد</p><p className="font-medium">{guard.email}</p></div>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                <Phone className="w-5 h-5 text-gray-400" />
+                <div><p className="text-xs text-gray-500">اسم المستخدم</p><p className="font-medium">{guard.username || '—'}</p></div>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                <Shield className="w-5 h-5 text-gray-400" />
+                <div><p className="text-xs text-gray-500">الحالة</p><Badge variant={guard.isActive ? 'default' : 'secondary'}>{guard.isActive ? 'نشط' : 'غير نشط'}</Badge></div>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                <Phone className="w-5 h-5 text-gray-400" />
+                <div><p className="text-xs text-gray-500">الهاتف</p><p className="font-medium">{guard.phone}</p></div>
+              </div>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-              <Shield className="w-5 h-5 text-gray-400" />
-              <div><p className="text-xs text-gray-500">الحالة</p><Badge variant={guard.isActive ? 'default' : 'secondary'}>{guard.isActive ? 'نشط' : 'غير نشط'}</Badge></div>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
