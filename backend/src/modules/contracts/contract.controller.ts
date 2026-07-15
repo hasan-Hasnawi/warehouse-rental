@@ -11,7 +11,6 @@ const contractSchema = z.object({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   rentAmount: z.number().positive(),
-  depositAmount: z.number().min(0),
   discount: z.number().min(0).default(0),
   guardFeeMonthly: z.number().min(0).default(0),
   isPreAgreed: z.boolean().default(false),

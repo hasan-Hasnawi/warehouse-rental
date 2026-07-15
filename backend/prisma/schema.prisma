@@ -86,7 +86,6 @@ model Contract {
   startDate      DateTime
   endDate        DateTime
   rentAmount     Float
-  depositAmount  Float
   discount       Float    @default(0)
   guardFeeMonthly Float   @default(0)
   isPreAgreed    Boolean  @default(false)

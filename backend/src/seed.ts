@@ -78,7 +78,7 @@ async function main() {
     update: {},
     create: {
       contractNo: 'CTR-001', clientId: client.id, warehouseId: w1.id,
-      startDate: c1Start, endDate: c1End, rentAmount: rent1, depositAmount: rent1 * 0.5,
+      startDate: c1Start, endDate: c1End, rentAmount: rent1,
       discount: 0, guardFeeMonthly: 100000, isPreAgreed: true,
       status: 'ACTIVE', signedByAdmin: true, signedByClient: true,
     },
@@ -89,7 +89,7 @@ async function main() {
     update: {},
     create: {
       contractNo: 'CTR-002', clientId: client.id, warehouseId: w2.id,
-      startDate: c2Start, endDate: c2End, rentAmount: rent2, depositAmount: rent2 * 0.5,
+      startDate: c2Start, endDate: c2End, rentAmount: rent2,
       discount: 500000, guardFeeMonthly: 75000, isPreAgreed: true,
       status: 'ACTIVE', signedByAdmin: true, signedByClient: true,
     },

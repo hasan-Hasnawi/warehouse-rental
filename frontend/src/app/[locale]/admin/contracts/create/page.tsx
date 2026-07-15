@@ -90,12 +90,6 @@ export default function CreateContractPage() {
     return Math.max(0, periodRent - disc)
   }
 
-  const computeDeposit = () => {
-    const months = parseInt(durationMonths) || 6
-    const rentPerMonth = computeRentAmount() / months
-    return Math.round(rentPerMonth / 2)
-  }
-
   const handleSubmit = async () => {
     if (!clientId || !warehouseId || !startDate) {
       alert('يرجى تعبئة جميع الحقول المطلوبة')
@@ -110,13 +104,11 @@ export default function CreateContractPage() {
 
     const endDate = computeEndDate()
     const rentAmount = computeRentAmount()
-    const depositAmount = computeDeposit()
-
     setLoading(true)
     try {
       await api.contracts.create({
         clientId, warehouseId, startDate, endDate,
-        rentAmount, depositAmount,
+        rentAmount,
         discount: parseFloat(discount) || 0,
         guardFeeMonthly: parseFloat(guardFeeMonthly) || 0,
         isPreAgreed,
@@ -250,10 +242,6 @@ export default function CreateContractPage() {
               <div className="flex justify-between text-sm">
                 <span>إجمالي الإيجار:</span>
                 <span className="font-bold">{computeRentAmount().toLocaleString()} دينار</span>
-              </div>
-              <div className="flex justify-between text-sm text-gray-500">
-                <span>التأمين:</span>
-                <span className="font-bold">{computeDeposit().toLocaleString()} دينار</span>
               </div>
               {parseFloat(guardFeeMonthly) > 0 && (
                 <div className="flex justify-between text-sm text-gray-500">

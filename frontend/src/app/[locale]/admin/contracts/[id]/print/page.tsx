@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Printer, ArrowLeft } from 'lucide-react'
 
 const statusText: Record<string, string> = { ACTIVE: 'نشط', EXPIRED: 'منتهي', TERMINATED: 'ملغي', PENDING: 'قيد الانتظار' }
-const isPaid = (p: any) => p.status === 'PAID'
 
 export default function PrintContractPage() {
   const params = useParams()
@@ -22,9 +21,26 @@ export default function PrintContractPage() {
 
   if (!contract) return <div className="text-center text-gray-500 py-12">جاري التحميل...</div>
 
-  const paidPayments = contract.payments?.filter(isPaid) || []
-  const paidAmount = paidPayments.reduce((s: number, p: any) => s + p.amount, 0)
+  const paidAmount = contract.payments?.reduce((s: number, p: any) => s + (p.status === 'PAID' ? p.amount : 0), 0) || 0
   const remainingAmount = Math.max(0, contract.rentAmount - paidAmount)
+  const terms = [
+    'على المستأجر دفع الايجار قبل انتهاء مدة الايجار ولا يسترجع اي مبلغ من الايجار في حال تفريغ المستأجر المخزن قبل انتهاء .',
+    'على المستأجر تسليم نسخة من المستمسكات الثبوتية له .',
+    'في حال عدم الرغبة بتجديد الايجار يتم تبليغ الادارة قبل شهر من انتهاء المدة.',
+    'في حال عدم دفع الايجار او تأخر دفعه عن خمسة ايام عن موعده يتم غلق المخزن.',
+    'دفع اجور حراسة شهرية لكل مخزن الى الحارس حسب المتفق عليه مع الحارس.',
+    'تحديد شخص او شخصين معتمدين من قبل المستأجر يحق لهم فتح المخزن وتحميل وتفريغ البضائع من المخزن.',
+    'اعطاء رقمين هاتف نقال فعالين 24 ساعة للحارس من قبل المستأجر ليتسنى للحارس الاتصال به في حال حدوث اي طارئ.',
+    'الحارس يتحمل مسؤولية فتح المخزن من قبل الشخص المعتمد من قبل المستأجر فقط ولا يحق لأي شخص فتح المخزن .',
+    'لا يجوز وضع اي مواد خارج المخزن.',
+    'لا يتحمل الحارس مسؤولية اي مواد خارج المخزن سواء كان بقائها فترة قصيرة او طويلة .',
+    'عند فتح المخزن من قبل الشخص المعتمد تنتهي مسؤولية الحارس وكذلك اثناء التحميل والتفريغ حتى يتم غلق المخزن.',
+    'ممنوع منعا باتا التدخين داخل المخزن لأي شخص.',
+    'على المستأجر وضع ادوات اطفاء الحرائق في المخزن بما يناسب حجم المخزن وكمية المواد المخزنة.',
+    'يتحمل المستأجر كافة الخسائر المادية والتبعات القانونية عند حدوث حريق في مخزنه او خارج المخزن جراء اي سبب اهمال من قبل عمال مخزن المستأجر ولا تتحمل ادارة المخازن ولا الحارس اي خسائر مادية او اي تبعات قانونية.',
+    'ممنوع سحب كهرباء داخل المخزن.',
+    'ادارة المخازن غير مسؤولة عن اي حادث حريق او غرق او اي كارثة طبيعية او غير طبيعية.',
+  ]
 
   return (
     <>
@@ -85,10 +101,6 @@ export default function PrintContractPage() {
                 <td className="py-1 text-gray-600 font-medium">مبلغ الإيجار</td>
                 <td className="py-1 font-semibold">{Number(contract.rentAmount).toLocaleString()} دينار</td>
               </tr>
-              <tr className="border-b">
-                <td className="py-1 text-gray-600 font-medium">التأمين</td>
-                <td className="py-1 font-semibold">{Number(contract.depositAmount).toLocaleString()} دينار</td>
-              </tr>
               {contract.discount > 0 && (
                 <tr className="border-b">
                   <td className="py-1 text-gray-600 font-medium">التخفيض</td>
@@ -127,31 +139,12 @@ export default function PrintContractPage() {
           )}
 
           <div className="border rounded p-2 mb-2">
-            <h2 className="font-bold text-xs text-gray-600 mb-1">سجل الدفعات المدفوعة</h2>
-            {paidPayments.length === 0 ? (
-              <p className="text-xs text-gray-500">لا توجد دفعات مدفوعة</p>
-            ) : (
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b text-gray-500">
-                    <th className="text-right py-0.5">#</th>
-                    <th className="text-right py-0.5">المبلغ</th>
-                    <th className="text-right py-0.5">تاريخ الاستحقاق</th>
-                    <th className="text-right py-0.5">تاريخ الدفع</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paidPayments.map((p: any, i: number) => (
-                    <tr key={p.id} className="border-b">
-                      <td className="py-0.5">{i + 1}</td>
-                      <td className="py-0.5">{Number(p.amount).toLocaleString()}</td>
-                      <td className="py-0.5">{new Date(p.dueDate).toLocaleDateString('ar-IQ')}</td>
-                      <td className="py-0.5">{p.paidAt ? new Date(p.paidAt).toLocaleDateString('ar-IQ') : '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+            <h2 className="font-bold text-xs text-gray-600 mb-1">شروط التأجير</h2>
+            <ol className="text-xs space-y-1 pr-4">
+              {terms.map((t, i) => (
+                <li key={i} className="leading-relaxed">{i + 1}. {t}</li>
+              ))}
+            </ol>
           </div>
 
           <div className="grid grid-cols-2 gap-8 mt-6 pt-3">
