@@ -50,6 +50,7 @@ export default function AdminContractDetailPage() {
         method: payMethod,
         dueDate: payDueDate,
         description: payDesc || `دفعة جزئية - عقد ${contract.contractNo}`,
+        status: 'PAID',
       })
       setShowAddPayment(false)
       setPayAmount(''); setPayDesc(''); setPayDueDate('')

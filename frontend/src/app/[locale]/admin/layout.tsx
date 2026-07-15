@@ -13,7 +13,6 @@ import { useUnreadNotifications } from '@/lib/use-notifications'
 const navItems = [
   { href: '/admin', label: 'نظرة عامة', icon: Building2 },
   { href: '/admin/warehouses', label: 'المخازن', icon: Package },
-  { href: '/admin/inventory', label: 'المخزون', icon: Package },
   { href: '/admin/groups', label: 'المجموعات', icon: Layers },
   { href: '/admin/contracts', label: 'العقود', icon: FileText },
   { href: '/admin/clients', label: 'المستأجرون', icon: Users },

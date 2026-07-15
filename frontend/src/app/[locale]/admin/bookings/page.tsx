@@ -5,7 +5,7 @@ import { api } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, DollarSign, CheckCircle, XCircle } from 'lucide-react'
+import { MapPin, DollarSign, CheckCircle, XCircle, Trash2 } from 'lucide-react'
 import WhatsAppButton from '@/components/WhatsAppButton'
 
 const statusColor: Record<string, string> = {
@@ -45,6 +45,16 @@ export default function AdminBookingsPage() {
   const handleReject = async (id: string) => {
     try {
       await api.bookings.reject(id)
+      loadBookings()
+    } catch (err: any) {
+      alert(err.message)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذا الحجز؟')) return
+    try {
+      await api.bookings.delete(id)
       loadBookings()
     } catch (err: any) {
       alert(err.message)
@@ -91,12 +101,15 @@ export default function AdminBookingsPage() {
                 </div>
               )}
               {b.status !== 'PENDING' && (
-                <WhatsAppButton
-                  phone={b.client?.phone || ''}
-                  name={b.client?.fullName || ''}
-                  defaultCategory="bookings"
-                  presetFields={{ warehouse: b.warehouse?.name || '', name: b.client?.fullName || '' }}
-                />
+                <div className="flex gap-2">
+                  <WhatsAppButton
+                    phone={b.client?.phone || ''}
+                    name={b.client?.fullName || ''}
+                    defaultCategory="bookings"
+                    presetFields={{ warehouse: b.warehouse?.name || '', name: b.client?.fullName || '' }}
+                  />
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(b.id)} className="text-red-500"><Trash2 className="w-4 h-4" /></Button>
+                </div>
               )}
             </CardContent>
           </Card>

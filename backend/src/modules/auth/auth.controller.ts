@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { z } from 'zod';
 import { prisma } from '../../index';
 import { AuthRequest } from '../../middleware/auth';
@@ -10,7 +11,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 const registerSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email().optional(),
+  username: z.string().min(3).optional(),
   password: z.string().min(6),
   fullName: z.string().min(2),
   phone: z.string().min(8),
@@ -19,7 +21,7 @@ const registerSchema = z.object({
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().min(1),
   password: z.string(),
 });
 
@@ -32,16 +34,22 @@ function generateToken(user: { id: string; email: string; role: string }) {
 export async function register(req: AuthRequest, res: Response) {
   try {
     const data = registerSchema.parse(req.body);
-    const existing = await prisma.user.findUnique({ where: { email: data.email } });
-    if (existing) {
-      return res.status(400).json({ message: 'Email already registered' });
+    const email = data.email || `guard-${crypto.randomBytes(4).toString('hex')}@system.local`;
+    const username = data.username || undefined;
+
+    if (data.email) {
+      const existing = await prisma.user.findUnique({ where: { email } });
+      if (existing) return res.status(400).json({ message: 'Email already registered' });
+    }
+    if (username) {
+      const existingUsername = await prisma.user.findFirst({ where: { username } });
+      if (existingUsername) return res.status(400).json({ message: 'Username already taken' });
     }
 
     const passwordHash = await bcrypt.hash(data.password, 12);
-    const { password: _, ...safeData } = data;
     const user = await prisma.user.create({
-      data: { ...safeData, passwordHash },
-      select: { id: true, email: true, fullName: true, phone: true, role: true, language: true },
+      data: { email, username, passwordHash, fullName: data.fullName, phone: data.phone, role: data.role, language: data.language },
+      select: { id: true, email: true, username: true, fullName: true, phone: true, role: true, language: true },
     });
 
     const token = generateToken(user);
@@ -60,7 +68,14 @@ export async function register(req: AuthRequest, res: Response) {
 export async function login(req: AuthRequest, res: Response) {
   try {
     const data = loginSchema.parse(req.body);
-    const user = await prisma.user.findUnique({ where: { email: data.email } });
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: data.email },
+          { username: data.email },
+        ],
+      },
+    });
     if (!user || !user.isActive) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -74,7 +89,7 @@ export async function login(req: AuthRequest, res: Response) {
     await logActivity({ userId: user.id, action: 'LOGIN', entity: 'User', entityId: user.id });
 
     res.json({
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, language: user.language },
+      user: { id: user.id, email: user.email, username: user.username, fullName: user.fullName, role: user.role, language: user.language },
       token,
     });
   } catch (err) {
@@ -90,7 +105,7 @@ export async function getProfile(req: AuthRequest, res: Response) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user!.id },
-      select: { id: true, email: true, fullName: true, phone: true, role: true, language: true, avatarUrl: true, isActive: true },
+      select: { id: true, email: true, username: true, fullName: true, phone: true, role: true, language: true, avatarUrl: true, isActive: true },
     });
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
@@ -131,7 +146,7 @@ export async function listUsers(req: AuthRequest, res: Response) {
     if (role) where.role = role;
     const users = await prisma.user.findMany({
       where,
-      select: { id: true, email: true, fullName: true, phone: true, role: true, language: true, isActive: true, createdAt: true },
+      select: { id: true, email: true, username: true, fullName: true, phone: true, role: true, language: true, isActive: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
     });
     res.json(users);
@@ -144,14 +159,22 @@ export async function listUsers(req: AuthRequest, res: Response) {
 export async function createUserByAdmin(req: AuthRequest, res: Response) {
   try {
     const data = registerSchema.parse(req.body);
-    const existing = await prisma.user.findUnique({ where: { email: data.email } });
-    if (existing) return res.status(400).json({ message: 'Email already registered' });
+    const email = data.email || `guard-${crypto.randomBytes(4).toString('hex')}@system.local`;
+    const username = data.username || undefined;
+
+    if (data.email) {
+      const existing = await prisma.user.findUnique({ where: { email } });
+      if (existing) return res.status(400).json({ message: 'Email already registered' });
+    }
+    if (username) {
+      const existingUsername = await prisma.user.findFirst({ where: { username } });
+      if (existingUsername) return res.status(400).json({ message: 'Username already taken' });
+    }
 
     const passwordHash = await bcrypt.hash(data.password, 12);
-    const { password: _, ...safeData } = data;
     const user = await prisma.user.create({
-      data: { ...safeData, passwordHash },
-      select: { id: true, email: true, fullName: true, phone: true, role: true, language: true },
+      data: { email, username, passwordHash, fullName: data.fullName, phone: data.phone, role: data.role, language: data.language },
+      select: { id: true, email: true, username: true, fullName: true, phone: true, role: true, language: true },
     });
     await logActivity({ userId: req.user!.id, action: 'CREATE_USER', entity: 'User', entityId: user.id });
     res.status(201).json(user);
@@ -167,6 +190,7 @@ export async function updateUser(req: AuthRequest, res: Response) {
     const schema = z.object({
       fullName: z.string().min(2).optional(),
       email: z.string().email().optional(),
+      username: z.string().min(3).optional(),
       phone: z.string().min(8).optional(),
       password: z.string().min(6).optional(),
       role: z.enum(['ADMIN', 'CLIENT', 'GUARD']).optional(),
@@ -182,7 +206,7 @@ export async function updateUser(req: AuthRequest, res: Response) {
     const user = await prisma.user.update({
       where: { id: req.params.id },
       data: updateData,
-      select: { id: true, email: true, fullName: true, phone: true, role: true, language: true, isActive: true },
+      select: { id: true, email: true, username: true, fullName: true, phone: true, role: true, language: true, isActive: true },
     });
     await logActivity({ userId: req.user!.id, action: 'UPDATE_USER', entity: 'User', entityId: user.id });
     res.json(user);

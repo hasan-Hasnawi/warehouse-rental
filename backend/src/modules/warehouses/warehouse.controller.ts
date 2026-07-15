@@ -14,6 +14,7 @@ const warehouseSchema = z.object({
   city: z.string().min(2),
   pricePerMonth: z.number().positive(),
   pricePer6Months: z.number().positive(),
+  status: z.enum(['VACANT', 'RENTED', 'MAINTENANCE']).optional(),
   features: z.array(z.string()).default([]),
   guardId: z.string().optional(),
   groupId: z.string().optional(),

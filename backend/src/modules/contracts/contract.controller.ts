@@ -142,18 +142,6 @@ export async function create(req: AuthRequest, res: Response) {
 
       await tx.warehouse.update({ where: { id: data.warehouseId }, data: { status: 'RENTED' } });
 
-      await tx.payment.create({
-        data: {
-          contractId: c.id,
-          clientId: data.clientId,
-          amount: data.rentAmount,
-          method: 'cash',
-          status: 'PENDING',
-          dueDate: data.startDate,
-          description: `دفعة عقد ${contractNo}`,
-        },
-      });
-
       return c;
     });
 

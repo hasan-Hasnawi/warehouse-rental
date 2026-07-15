@@ -33,7 +33,7 @@ export default function AdminWarehousesPage() {
   const [filterGroup, setFilterGroup] = useState('')
   const [filterAreaMin, setFilterAreaMin] = useState('')
   const [filterAreaMax, setFilterAreaMax] = useState('')
-  const [form, setForm] = useState({ name: '', code: '', area: '', address: '', city: '', pricePer6Months: '', description: '', guardId: '', groupId: '' })
+  const [form, setForm] = useState({ name: '', code: '', area: '', address: '', city: '', pricePer6Months: '', description: '', guardId: '', groupId: '', status: '' })
 
   const buildParams = () => {
     const p = new URLSearchParams()
@@ -58,7 +58,7 @@ export default function AdminWarehousesPage() {
     return () => clearTimeout(timer)
   }, [filterGuard, filterGroup, filterAreaMin, filterAreaMax])
 
-  const resetForm = () => { setForm({ name: '', code: '', area: '', address: '', city: '', pricePer6Months: '', description: '', guardId: '', groupId: '' }); setEditingId(null) }
+  const resetForm = () => { setForm({ name: '', code: '', area: '', address: '', city: '', pricePer6Months: '', description: '', guardId: '', groupId: '', status: '' }); setEditingId(null) }
 
   const handleSubmit = async () => {
     const p = parseFloat(form.pricePer6Months)
@@ -80,7 +80,7 @@ export default function AdminWarehousesPage() {
     setForm({
       name: w.name, code: w.code, area: w.area.toString(), address: w.address, city: w.city,
       pricePer6Months: w.pricePer6Months?.toString() || (w.pricePerMonth * 6).toString(),
-      description: w.description || '', guardId: w.guardId || '', groupId: w.groupId || '',
+      description: w.description || '', guardId: w.guardId || '', groupId: w.groupId || '', status: w.status || '',
     })
     setEditingId(w.id); setShowForm(true)
   }
@@ -158,6 +158,17 @@ export default function AdminWarehousesPage() {
                   {guards.map(g => <option key={g.id} value={g.id}>{g.fullName}</option>)}
                 </Select>
               </div>
+              {editingId && (
+                <div className="space-y-2">
+                  <Label>حالة المخزن</Label>
+                  <Select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
+                    <option value="">اختر الحالة</option>
+                    <option value="VACANT">شاغر</option>
+                    <option value="RENTED">مؤجر</option>
+                    <option value="MAINTENANCE">تحت الصيانة</option>
+                  </Select>
+                </div>
+              )}
             </div>
             <div className="space-y-2"><Label>الوصف</Label><Input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
             <div className="flex gap-2">

@@ -60,6 +60,20 @@ export async function markAllAsRead(req: AuthRequest, res: Response) {
   }
 }
 
+export async function deleteNotifications(req: AuthRequest, res: Response) {
+  try {
+    const { ids } = z.object({ ids: z.array(z.string()).min(1) }).parse(req.body);
+    await prisma.notification.deleteMany({
+      where: { id: { in: ids }, userId: req.user!.id },
+    });
+    res.json({ message: 'Notifications deleted' });
+  } catch (err) {
+    if (err instanceof z.ZodError) return res.status(400).json({ message: 'Validation error', errors: err.errors });
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
 export async function createNotification(userId: string, title: string, message: string, type: string, link?: string) {
   try {
     await prisma.notification.create({ data: { userId, title, message, type, link } });

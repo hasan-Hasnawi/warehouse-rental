@@ -139,6 +139,7 @@ export const api = {
     cancel: (id: string) => mutate<any>(`/bookings/${id}/cancel`, { method: 'POST' }, 'booking:cancel'),
     approve: (id: string) => mutate<any>(`/bookings/${id}/approve`, { method: 'POST' }, 'booking:approve'),
     reject: (id: string) => mutate<any>(`/bookings/${id}/reject`, { method: 'POST' }, 'booking:reject'),
+    delete: (id: string) => mutate<any>(`/bookings/${id}`, { method: 'DELETE' }, 'booking:delete'),
   },
   services: {
     list: () => request<any[]>('/services'),
@@ -149,6 +150,7 @@ export const api = {
     unreadCount: () => request<{ count: number }>('/notifications/unread-count'),
     markAsRead: (id: string) => request<any>(`/notifications/${id}/read`, { method: 'PUT' }),
     markAllAsRead: () => request<any>('/notifications/read-all', { method: 'PUT' }),
+    delete: (ids: string[]) => mutate<any>('/notifications/delete', { method: 'POST', body: JSON.stringify({ ids }) }, 'notification:delete'),
   },
   inventory: {
     list: () => request<any[]>('/inventory'),

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Shield, Phone, Mail, Warehouse, ClipboardList, Plus, CheckCircle, XCircle } from 'lucide-react'
+import { ArrowLeft, Shield, Phone, Mail, Warehouse, ClipboardList, Plus, CheckCircle, XCircle, Edit2 } from 'lucide-react'
 
 const priorityColor: Record<string, string> = {
   low: 'bg-gray-100 text-gray-600',
@@ -98,7 +98,12 @@ export default function GuardDetailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-amber-500" /> {guard.fullName}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-amber-500" /> {guard.fullName}</CardTitle>
+            <Button variant="outline" size="sm" onClick={() => router.push('/admin/guards')} className="flex items-center gap-1">
+              <Edit2 className="w-4 h-4" /> تعديل
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4">

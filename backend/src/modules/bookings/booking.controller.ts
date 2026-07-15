@@ -120,3 +120,17 @@ export async function reject(req: AuthRequest, res: Response) {
     res.status(500).json({ message: 'Internal server error' });
   }
 }
+
+export async function removeBooking(req: AuthRequest, res: Response) {
+  try {
+    const booking = await prisma.booking.findUnique({ where: { id: req.params.id } });
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+    await prisma.booking.delete({ where: { id: req.params.id } });
+    await logActivity({ userId: req.user!.id, action: 'DELETE_BOOKING', entity: 'Booking', entityId: req.params.id });
+    res.json({ message: 'Booking deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}

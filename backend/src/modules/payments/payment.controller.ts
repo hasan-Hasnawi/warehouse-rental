@@ -12,6 +12,8 @@ const paymentSchema = z.object({
   method: z.enum(['ki_card', 'zaincash', 'cash', 'bank']),
   dueDate: z.coerce.date(),
   description: z.string().optional(),
+  status: z.enum(['PENDING', 'PAID']).optional(),
+  paidAt: z.coerce.date().optional(),
 });
 
 export async function list(req: AuthRequest, res: Response) {
@@ -74,7 +76,8 @@ export async function create(req: AuthRequest, res: Response) {
       data: {
         ...data,
         clientId: req.user!.role === 'ADMIN' ? contract.clientId : req.user!.id,
-        status: 'PENDING',
+        status: data.status || 'PENDING',
+        paidAt: data.status === 'PAID' ? (data.paidAt || new Date()) : undefined,
       },
     });
     await logActivity({ userId: req.user!.id, action: 'CREATE_PAYMENT', entity: 'Payment', entityId: payment.id });
