@@ -147,8 +147,8 @@ export async function create(req: AuthRequest, res: Response) {
 
     await logActivity({ userId: req.user!.id, action: 'CREATE_CONTRACT', entity: 'Contract', entityId: contract.id });
 
-    await notifyUser(data.clientId, 'تم إنشاء عقد جديد', `تم إنشاء العقد ${contractNo}`, 'info', `/client/contracts/${contract.id}`);
-    await notifyAdmins('عقد جديد', `تم إنشاء العقد ${contractNo} للمستأجر ${contract.client.fullName}`, 'info', `/admin/contracts/${contract.id}`);
+    await notifyUser(data.clientId, 'تم إنشاء عقد جديد', `تم إنشاء العقد ${contract.contractNo}`, 'info', `/client/contracts/${contract.id}`);
+    await notifyAdmins('عقد جديد', `تم إنشاء العقد ${contract.contractNo} للمستأجر ${contract.client.fullName}`, 'info', `/admin/contracts/${contract.id}`);
 
     res.status(201).json(contract);
   } catch (err) {
