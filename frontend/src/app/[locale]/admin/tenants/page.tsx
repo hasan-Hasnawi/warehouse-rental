@@ -32,7 +32,7 @@ export default function AdminTenantsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <h1 className="text-2xl font-bold">المستأجرون</h1>
         <Button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2">
           <Plus className="w-4 h-4" /> إضافة مستأجر
@@ -47,7 +47,7 @@ export default function AdminTenantsPage() {
       {showForm && (
         <Card className="border-2 border-yellow-300 bg-yellow-50">
           <CardContent className="p-4 space-y-3">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Input placeholder="الاسم *" value={name} onChange={e => setName(e.target.value)} />
               <Input placeholder="رقم الهاتف 1" value={phone} onChange={e => setPhone(e.target.value)} />
               <Input placeholder="رقم الهاتف 2" value={phone2} onChange={e => setPhone2(e.target.value)} />

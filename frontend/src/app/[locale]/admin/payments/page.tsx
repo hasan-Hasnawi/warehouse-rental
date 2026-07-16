@@ -32,7 +32,7 @@ export default function AdminPaymentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">المدفوعات</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => exportToExcel(payments, [{ header:'المبلغ',key:'amount' },{ header:'العملة',key:'currency' },{ header:'المستأجر',key:'tenant',render:(_,r)=>r.tenant?.name },{ header:'العقد',key:'contract',render:(_,r)=>r.contract?.contractNo },{ header:'طريقة الدفع',key:'method' },{ header:'الحالة',key:'status',render:(v)=>statusText[v]||v }], 'المدفوعات')}><FileDown className="w-4 h-4" /> Excel</Button>
           <Button variant="outline" size="sm" onClick={() => exportToPDF('المدفوعات', payments, [{ header:'المبلغ',key:'amount' },{ header:'المستأجر',key:'tenant',render:(_,r)=>r.tenant?.name },{ header:'العقد',key:'contract',render:(_,r)=>r.contract?.contractNo },{ header:'طريقة الدفع',key:'method' },{ header:'الحالة',key:'status',render:(v)=>statusText[v]||v }], 'المدفوعات')}><FileDown className="w-4 h-4" /> PDF</Button>
         </div>

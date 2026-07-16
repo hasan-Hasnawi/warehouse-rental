@@ -95,7 +95,7 @@ export default function AdminWarehousesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">المخازن</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => exportToExcel(warehouses, [{ header:'الاسم',key:'name' },{ header:'الكود',key:'code' },{ header:'المساحة',key:'area' },{ header:'المدينة',key:'city' },{ header:'السعر/6شهور',key:'pricePer6Months',render:(_,r)=>Number(r.pricePer6Months||r.pricePerMonth*6).toLocaleString() },{ header:'الحالة',key:'status',render:(v)=>statusText[v]||v },{ header:'الحارس',key:'guard',render:(_,r)=>r.guard?.fullName },{ header:'المجموعة',key:'group',render:(_,r)=>r.group?.name }], 'المخازن')}><FileDown className="w-4 h-4" /> Excel</Button>
           <Button variant="outline" size="sm" onClick={() => exportToPDF('المخازن', warehouses, [{ header:'الاسم',key:'name' },{ header:'الكود',key:'code' },{ header:'المساحة',key:'area' },{ header:'المدينة',key:'city' },{ header:'الحالة',key:'status',render:(v)=>statusText[v]||v }], 'المخازن')}><FileDown className="w-4 h-4" /> PDF</Button>
           <Button onClick={() => { resetForm(); setShowForm(!showForm) }} className="flex items-center gap-2">
@@ -107,7 +107,7 @@ export default function AdminWarehousesPage() {
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-2 mb-3"><Filter className="w-4 h-4 text-gray-500" /><span className="text-sm font-medium">تصفية</span></div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <div className="space-y-1">
               <Label className="text-xs">الحارس</Label>
               <Select value={filterGuard} onChange={e => setFilterGuard(e.target.value)}>
@@ -137,7 +137,7 @@ export default function AdminWarehousesPage() {
       {showForm && (
         <Card>
           <CardContent className="p-6 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2"><Label>اسم المخزن</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
               <div className="space-y-2"><Label>الكود</Label><Input value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} /></div>
               <div className="space-y-2"><Label>المساحة (م²)</Label><Input type="number" value={form.area} onChange={e => setForm({ ...form, area: e.target.value })} /></div>
@@ -197,8 +197,8 @@ export default function AdminWarehousesPage() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" size="icon" onClick={() => handleEdit(w)}><Edit2 className="w-4 h-4" /></Button>
-                <Button variant="ghost" size="icon" onClick={() => handleDelete(w.id)} className="text-red-500"><Trash2 className="w-4 h-4" /></Button>
+                <Button variant="ghost" className="p-3" onClick={() => handleEdit(w)}><Edit2 className="w-5 h-5" /></Button>
+                <Button variant="ghost" className="p-3 text-red-500" onClick={() => handleDelete(w.id)}><Trash2 className="w-5 h-5" /></Button>
               </div>
             </CardContent>
           </Card>

@@ -69,7 +69,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <div className="flex-1 flex flex-col min-h-screen">
         <header className="bg-white border-b border-yellow-100 px-6 py-4 flex items-center justify-between lg:justify-end shadow-sm">
-          <button className="lg:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}>
+          <button className="lg:hidden p-3" onClick={() => setSidebarOpen(!sidebarOpen)}>
             <Menu className="w-6 h-6" />
           </button>
           <div className="flex items-center gap-4">

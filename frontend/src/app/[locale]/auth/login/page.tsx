@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from '@/i18n/navigation'
 import { useAuth } from '@/lib/auth-context'
-import { Link } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,8 +21,7 @@ export default function LoginPage() {
     try {
       const user = await login(email, password)
       if (user.role === 'ADMIN') router.push('/admin')
-      else if (user.role === 'GUARD') router.push('/guard')
-      else router.push('/client')
+      else router.push('/guard')
     } catch (err: any) {
       setError(err.message || 'فشل تسجيل الدخول')
     }
@@ -66,12 +64,6 @@ export default function LoginPage() {
               تسجيل الدخول
             </Button>
           </form>
-          <p className="text-center text-sm mt-4 text-gray-500">
-            ليس لديك حساب؟{' '}
-            <Link href="/auth/register" className="text-teal-600 hover:underline font-medium">
-              إنشاء حساب
-            </Link>
-          </p>
         </CardContent>
       </Card>
     </div>

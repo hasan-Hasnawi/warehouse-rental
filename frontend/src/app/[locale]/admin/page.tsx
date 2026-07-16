@@ -100,7 +100,7 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>المخازن</CardTitle>
@@ -167,7 +167,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="p-4 bg-orange-50 rounded-xl border border-orange-200">
                     <div className="flex items-center gap-2 text-orange-700 font-bold mb-2"><Filter className="w-4 h-4" /> إيرادات فترة مخصصة</div>
-                    <div className="flex gap-2 mb-2">
+                    <div className="flex flex-col sm:flex-row gap-2 mb-2">
                       <Input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-sm" />
                       <Input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-sm" />
                       <Button size="sm" onClick={handleCustomFilter} disabled={!customStart || !customEnd}>عرض</Button>

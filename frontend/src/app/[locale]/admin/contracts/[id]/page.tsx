@@ -68,9 +68,9 @@ export default function AdminContractDetailPage() {
       </button>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row items-start gap-2 flex-wrap justify-between">
           <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5" /> {contract.contractNo}</CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={() => router.push(`/admin/contracts/${params.id}/print`)}><Printer className="w-4 h-4" /></Button>
             <WhatsAppButton phone={contract.tenantPhone || contract.tenant?.phone || ''} name={contract.tenant?.name || ''} defaultCategory="contracts" presetFields={{ amount: String(contract.rentAmount || ''), contractNo: contract.contractNo, warehouse: contract.warehouse?.name || '', date: new Date(contract.endDate).toLocaleDateString('ar-IQ') }} />
             {(contract.status === 'EXPIRED' || contract.status === 'TERMINATED') && (
@@ -80,7 +80,7 @@ export default function AdminContractDetailPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
               <User className="w-5 h-5 text-gray-400" />
               <div><p className="text-xs text-gray-500">المستأجر</p><p className="font-medium">{contract.tenant?.name}</p></div>

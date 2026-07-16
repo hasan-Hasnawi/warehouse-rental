@@ -78,7 +78,7 @@ export default function AdminContractsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">العقود</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => exportToExcel(contracts, [{ header:'رقم العقد',key:'contractNo' },{ header:'المستأجر',key:'tenant',render:(_,r)=>r.tenant?.name },{ header:'المخزن',key:'warehouse',render:(_,r)=>r.warehouse?.name },{ header:'المدة',key:'status',render:(_,r)=>`${new Date(r.startDate).toLocaleDateString('ar-IQ')}→${new Date(r.endDate).toLocaleDateString('ar-IQ')}` },{ header:'الإيجار',key:'rentAmount' },{ header:'المدفوع',key:'paidAmount' },{ header:'المتبقي',key:'remainingAmount' },{ header:'الحالة',key:'status',render:(v)=>statusText[v]||v }], 'العقود')}><FileDown className="w-4 h-4" /> Excel</Button>
           <Button variant="outline" size="sm" onClick={() => exportToPDF('العقود', contracts, [{ header:'رقم العقد',key:'contractNo' },{ header:'المستأجر',key:'tenant',render:(_,r)=>r.tenant?.name },{ header:'المخزن',key:'warehouse',render:(_,r)=>r.warehouse?.name },{ header:'الإيجار',key:'rentAmount' },{ header:'المدفوع',key:'paidAmount' },{ header:'المتبقي',key:'remainingAmount' }], 'العقود')}><FileDown className="w-4 h-4" /> PDF</Button>
           <Button onClick={() => router.push('/admin/contracts/create')} className="flex items-center gap-2">
@@ -88,7 +88,7 @@ export default function AdminContractsPage() {
       </div>
 
       <div className="flex items-center gap-4 flex-wrap">
-        <div className="flex bg-gray-100 rounded-lg p-1 flex-wrap">
+        <div className="flex bg-gray-100 rounded-lg p-1 overflow-x-auto flex-nowrap gap-1">
           <button onClick={() => setFilterTab('all')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${filterTab === 'all' ? 'bg-white shadow-sm text-yellow-800' : 'text-gray-600 hover:text-gray-800'}`}>الكل ({contracts.length})</button>
           <button onClick={() => setFilterTab('incomplete')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${filterTab === 'incomplete' ? 'bg-white shadow-sm text-yellow-800' : 'text-gray-600 hover:text-gray-800'}`}>غير مكتملة الدفع ({counts.incomplete})</button>
           <button onClick={() => setFilterTab('active')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${filterTab === 'active' ? 'bg-white shadow-sm text-green-800' : 'text-gray-600 hover:text-gray-800'}`}>فعالة ({counts.active})</button>
@@ -135,7 +135,7 @@ export default function AdminContractsPage() {
                     )}
                     {c.isPreAgreed && <Badge className="bg-orange-100 text-orange-700 text-xs">متفق عليه سابقاً</Badge>}
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-wrap">
                     <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); router.push(`/admin/contracts/${c.id}/print`) }}>
                       <Printer className="w-3.5 h-3.5" />
                     </Button>

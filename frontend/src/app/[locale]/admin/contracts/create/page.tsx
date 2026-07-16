@@ -148,8 +148,8 @@ export default function CreateContractPage() {
       <Card>
         <CardHeader><CardTitle>معلومات العقد</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2" ref={wrapperRef}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2 relative" ref={wrapperRef}>
               <Label>المستأجر *</Label>
               <div className="relative">
                 <Input
@@ -162,7 +162,7 @@ export default function CreateContractPage() {
                 {searching && <span className="absolute left-8 top-2.5 text-xs text-gray-400">جاري البحث...</span>}
               </div>
               {showResults && (
-                <div className="absolute z-10 w-[calc(50%-1rem)] bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                <div className="absolute z-10 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
                   {searchResults.map(t => (
                     <button key={t.id} type="button" className="w-full text-right px-4 py-2 hover:bg-yellow-50 text-sm" onClick={() => selectTenant(t)}>
                       <span className="font-medium">{t.name}</span>
