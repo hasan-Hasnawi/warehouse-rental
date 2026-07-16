@@ -217,7 +217,7 @@ export default function AdminDashboard() {
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-red-800">{c.warehouse.name} - {c.contractNo}</p>
-                            <p className="text-xs text-red-600 mt-0.5">{c.client.fullName} · {c.client.phone}</p>
+                            <p className="text-xs text-red-600 mt-0.5">{c.tenant.name} · {c.tenant.phone}</p>
                             <p className="text-xs text-red-500 mt-0.5">
                               من {new Date(c.startDate).toLocaleDateString('ar-IQ')} إلى {new Date(c.endDate).toLocaleDateString('ar-IQ')}
                             </p>
@@ -229,7 +229,7 @@ export default function AdminDashboard() {
                           <Button size="sm" variant="outline" onClick={() => { setShowExpiredModal(false); router.push(`/admin/contracts/${c.id}`) }}>
                             عرض
                           </Button>
-                          <WhatsAppButton phone={c.client.phone} name={c.client.fullName} defaultCategory="contracts"
+                          <WhatsAppButton phone={c.tenant.phone} name={c.tenant.name} defaultCategory="contracts"
                             presetFields={{ 'رقم العقد': c.contractNo, 'المخزن': c.warehouse.name, 'المبلغ': c.rentAmount.toString() }} size="sm" />
                           <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-100"
                             onClick={async () => { if (confirm(`إنهاء العقد ${c.contractNo}؟`)) { try { await api.contracts.terminate(c.id); api.contracts.expiring().then(setAlerts) } catch (e: any) { alert(e.message) } } }}>
@@ -253,7 +253,7 @@ export default function AdminDashboard() {
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-orange-800">{c.warehouse.name} - {c.contractNo}</p>
-                            <p className="text-xs text-orange-600 mt-0.5">{c.client.fullName} · {c.client.phone}</p>
+                            <p className="text-xs text-orange-600 mt-0.5">{c.tenant.name} · {c.tenant.phone}</p>
                             <p className="text-xs text-orange-500 mt-0.5">
                               من {new Date(c.startDate).toLocaleDateString('ar-IQ')} إلى {new Date(c.endDate).toLocaleDateString('ar-IQ')}
                             </p>
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
                           <Button size="sm" variant="outline" onClick={() => { setShowExpiredModal(false); router.push(`/admin/contracts/${c.id}`) }}>
                             عرض
                           </Button>
-                          <WhatsAppButton phone={c.client.phone} name={c.client.fullName} defaultCategory="contracts"
+                          <WhatsAppButton phone={c.tenant.phone} name={c.tenant.name} defaultCategory="contracts"
                             presetFields={{ 'رقم العقد': c.contractNo, 'المخزن': c.warehouse.name, 'المبلغ': c.rentAmount.toString() }} size="sm" />
                           <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-100"
                             onClick={async () => { if (confirm(`إنهاء العقد ${c.contractNo}؟`)) { try { await api.contracts.terminate(c.id); api.contracts.expiring().then(setAlerts) } catch (e: any) { alert(e.message) } } }}>

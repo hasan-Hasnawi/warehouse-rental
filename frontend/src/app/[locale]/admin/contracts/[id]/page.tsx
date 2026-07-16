@@ -44,16 +44,8 @@ export default function AdminContractDetailPage() {
     }
     setPayLoading(true)
     try {
-      await api.payments.create({
-        contractId: contract.id,
-        amount,
-        method: payMethod,
-        dueDate: payDueDate,
-        description: payDesc || `دفعة جزئية - عقد ${contract.contractNo}`,
-        status: 'PAID',
-      })
-      setShowAddPayment(false)
-      setPayAmount(''); setPayDesc(''); setPayDueDate('')
+      await api.payments.create({ contractId: contract.id, amount, method: payMethod, dueDate: payDueDate, description: payDesc || `دفعة - عقد ${contract.contractNo}`, status: 'PAID' })
+      setShowAddPayment(false); setPayAmount(''); setPayDesc(''); setPayDueDate('')
       loadContract()
     } catch (err: any) { alert(err.message) }
     finally { setPayLoading(false) }
@@ -80,12 +72,7 @@ export default function AdminContractDetailPage() {
           <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5" /> {contract.contractNo}</CardTitle>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => router.push(`/admin/contracts/${params.id}/print`)}><Printer className="w-4 h-4" /></Button>
-            <WhatsAppButton
-              phone={contract.clientPhone || contract.client?.phone || ''}
-              name={contract.client?.fullName || ''}
-              defaultCategory="contracts"
-              presetFields={{ amount: String(contract.rentAmount || ''), contractNo: contract.contractNo, warehouse: contract.warehouse?.name || '', date: new Date(contract.endDate).toLocaleDateString('ar-IQ') }}
-            />
+            <WhatsAppButton phone={contract.tenantPhone || contract.tenant?.phone || ''} name={contract.tenant?.name || ''} defaultCategory="contracts" presetFields={{ amount: String(contract.rentAmount || ''), contractNo: contract.contractNo, warehouse: contract.warehouse?.name || '', date: new Date(contract.endDate).toLocaleDateString('ar-IQ') }} />
             {(contract.status === 'EXPIRED' || contract.status === 'TERMINATED') && (
               <Button variant="destructive" size="sm" onClick={handleDelete}><Trash2 className="w-4 h-4 ml-1" /> حذف</Button>
             )}
@@ -96,7 +83,7 @@ export default function AdminContractDetailPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
               <User className="w-5 h-5 text-gray-400" />
-              <div><p className="text-xs text-gray-500">المستأجر</p><p className="font-medium">{contract.client?.fullName}</p></div>
+              <div><p className="text-xs text-gray-500">المستأجر</p><p className="font-medium">{contract.tenant?.name}</p></div>
             </div>
             <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
               <Warehouse className="w-5 h-5 text-gray-400" />
@@ -122,9 +109,7 @@ export default function AdminContractDetailPage() {
               <DollarSign className="w-5 h-5 text-gray-400" />
               <div className="flex-1">
                 <div className="flex justify-between"><p className="text-xs text-gray-500">المبلغ المتبقي</p><p className={`font-bold text-lg ${contract.remainingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>{contract.remainingAmount > 0 ? `${Number(contract.remainingAmount).toLocaleString()} دينار` : 'مسدد بالكامل ✓'}</p></div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
-                  <div className="bg-gradient-to-l from-red-500 to-yellow-400 h-2.5 rounded-full transition-all" style={{ width: `${remainingPct}%` }}></div>
-                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1"><div className="bg-gradient-to-l from-red-500 to-yellow-400 h-2.5 rounded-full transition-all" style={{ width: `${remainingPct}%` }}></div></div>
                 <p className="text-xs text-gray-400 mt-0.5">{remainingPct.toFixed(0)}% متبقي</p>
               </div>
             </div>
@@ -140,16 +125,16 @@ export default function AdminContractDetailPage() {
                 <div><p className="text-xs text-gray-500">أجر الحارس (شهري)</p><p className="font-medium">{Number(contract.guardFeeMonthly).toLocaleString()} دينار</p></div>
               </div>
             )}
-            {contract.clientPhone && (
+            {contract.tenantPhone && (
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                 <Phone className="w-5 h-5 text-gray-400" />
-                <div><p className="text-xs text-gray-500">هاتف 1</p><p className="font-medium" dir="ltr">{contract.clientPhone}</p></div>
+                <div><p className="text-xs text-gray-500">هاتف 1</p><p className="font-medium" dir="ltr">{contract.tenantPhone}</p></div>
               </div>
             )}
-            {contract.clientPhone2 && (
+            {contract.tenantPhone2 && (
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                 <Phone className="w-5 h-5 text-gray-400" />
-                <div><p className="text-xs text-gray-500">هاتف 2</p><p className="font-medium" dir="ltr">{contract.clientPhone2}</p></div>
+                <div><p className="text-xs text-gray-500">هاتف 2</p><p className="font-medium" dir="ltr">{contract.tenantPhone2}</p></div>
               </div>
             )}
           </div>
@@ -166,9 +151,7 @@ export default function AdminContractDetailPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2"><CreditCard className="w-5 h-5" /> المدفوعات</CardTitle>
-          <Button size="sm" onClick={() => setShowAddPayment(!showAddPayment)} className="flex items-center gap-1">
-            <Plus className="w-4 h-4" /> إضافة دفعة
-          </Button>
+          <Button size="sm" onClick={() => setShowAddPayment(!showAddPayment)} className="flex items-center gap-1"><Plus className="w-4 h-4" /> إضافة دفعة</Button>
         </CardHeader>
         <CardContent className="space-y-3">
           {showAddPayment && (
@@ -195,25 +178,19 @@ export default function AdminContractDetailPage() {
               </CardContent>
             </Card>
           )}
-
           {(!contract.payments || contract.payments.length === 0) && <p className="text-gray-500 text-center py-4">لا توجد مدفوعات</p>}
-          {contract.payments?.map((p: any, i: number) => {
-            const runningBalance = contract.rentAmount - contract.payments
-              .filter((pp: any, j: number) => pp.status === 'PAID' && j <= i)
-              .reduce((sum: number, pp: any) => sum + pp.amount, 0)
-            return (
-              <div key={p.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => router.push(`/admin/payments/${p.id}`)}>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">{Number(p.amount).toLocaleString()} دينار</span>
-                    <Badge className={payStatusColor[p.status]}>{payStatusText[p.status]}</Badge>
-                  </div>
-                  <p className="text-xs text-gray-400">{p.method || '—'} • {new Date(p.dueDate).toLocaleDateString('ar-IQ')}{p.paidAt ? ` • مدفوعة: ${new Date(p.paidAt).toLocaleDateString('ar-IQ')}` : ''}</p>
+          {contract.payments?.map((p: any) => (
+            <div key={p.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => router.push(`/admin/payments/${p.id}`)}>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">{Number(p.amount).toLocaleString()} دينار</span>
+                  <Badge className={payStatusColor[p.status]}>{payStatusText[p.status]}</Badge>
                 </div>
-                <p className="text-xs text-gray-400"># ت{p.id.slice(-4)}</p>
+                <p className="text-xs text-gray-400">{p.method || '—'} • {new Date(p.dueDate).toLocaleDateString('ar-IQ')}{p.paidAt ? ` • مدفوعة: ${new Date(p.paidAt).toLocaleDateString('ar-IQ')}` : ''}</p>
               </div>
-            )
-          })}
+              <p className="text-xs text-gray-400"># {p.id.slice(-4)}</p>
+            </div>
+          ))}
         </CardContent>
       </Card>
     </div>

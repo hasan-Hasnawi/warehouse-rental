@@ -66,7 +66,7 @@ export default function AdminPaymentDetailPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
               <User className="w-5 h-5 text-gray-400" />
-              <div><p className="text-xs text-gray-500">العميل</p><p className="font-medium">{payment.client?.fullName}</p></div>
+              <div><p className="text-xs text-gray-500">المستأجر</p><p className="font-medium">{payment.tenant?.name}</p></div>
             </div>
             <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
               <FileText className="w-5 h-5 text-gray-400" />

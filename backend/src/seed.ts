@@ -6,7 +6,6 @@ const prisma = new PrismaClient();
 async function main() {
   const adminHash = await bcrypt.hash('admin123', 12);
   const guardHash = await bcrypt.hash('salam123', 12);
-  const clientHash = await bcrypt.hash('client123', 12);
 
   await prisma.user.upsert({
     where: { email: 'admin@sotrage.com' },
@@ -20,10 +19,10 @@ async function main() {
     create: { email: 'salam@test.com', passwordHash: guardHash, fullName: 'سلام', phone: '07711111111', role: 'GUARD', language: 'ar' },
   });
 
-  const client = await prisma.user.upsert({
-    where: { email: 'client2@test.com' },
+  const tenant = await prisma.tenant.upsert({
+    where: { id: 'seed-tenant-1' },
     update: {},
-    create: { email: 'client2@test.com', passwordHash: clientHash, fullName: 'مستأجر تجريبي', phone: '07722222222', role: 'CLIENT', language: 'ar' },
+    create: { id: 'seed-tenant-1', name: 'مستأجر تجريبي', phone: '07722222222' },
   });
 
   const groupA = await prisma.group.upsert({
@@ -77,10 +76,10 @@ async function main() {
     where: { contractNo: 'CTR-001' },
     update: {},
     create: {
-      contractNo: 'CTR-001', clientId: client.id, warehouseId: w1.id,
+      contractNo: 'CTR-001', tenantId: tenant.id, warehouseId: w1.id,
       startDate: c1Start, endDate: c1End, rentAmount: rent1,
       discount: 0, guardFeeMonthly: 100000, isPreAgreed: true,
-      status: 'ACTIVE', signedByAdmin: true, signedByClient: true,
+      status: 'ACTIVE', signedByAdmin: true, signedByTenant: true,
     },
   });
 
@@ -88,16 +87,16 @@ async function main() {
     where: { contractNo: 'CTR-002' },
     update: {},
     create: {
-      contractNo: 'CTR-002', clientId: client.id, warehouseId: w2.id,
+      contractNo: 'CTR-002', tenantId: tenant.id, warehouseId: w2.id,
       startDate: c2Start, endDate: c2End, rentAmount: rent2,
       discount: 500000, guardFeeMonthly: 75000, isPreAgreed: true,
-      status: 'ACTIVE', signedByAdmin: true, signedByClient: true,
+      status: 'ACTIVE', signedByAdmin: true, signedByTenant: true,
     },
   });
 
   await prisma.payment.create({
     data: {
-      contractId: c1.id, clientId: client.id, amount: rent1,
+      contractId: c1.id, tenantId: tenant.id, amount: rent1,
       method: 'ki_card', status: 'PAID', dueDate: c1Start,
       paidAt: c1Start, description: 'دفعة 6 أشهر - مخزن المنطقة الصناعية أ',
     },
@@ -105,7 +104,7 @@ async function main() {
 
   await prisma.payment.create({
     data: {
-      contractId: c2.id, clientId: client.id, amount: rent2,
+      contractId: c2.id, tenantId: tenant.id, amount: rent2,
       method: 'zaincash', status: 'OVERDUE', dueDate: c2End,
       description: 'دفعة 6 أشهر - مخزن شارع المطار (متأخرة)',
     },
@@ -115,7 +114,6 @@ async function main() {
   console.log('---');
   console.log('Admin:  admin@sotrage.com / admin123');
   console.log('Guard:  salam@test.com    / salam123');
-  console.log('Client: client2@test.com  / client123');
   console.log('Groups: المجموعة أ (مستثمر أ), المجموعة ب (مستثمر ب)');
   console.log('Warehouses: WH-001→WH-004 assigned to guard سلام');
   console.log('Contract CTR-001: expires in ~10 days (orange)');

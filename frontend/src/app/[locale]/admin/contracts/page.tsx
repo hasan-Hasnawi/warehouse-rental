@@ -79,8 +79,8 @@ export default function AdminContractsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">العقود</h1>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => exportToExcel(contracts, [{ header:'رقم العقد',key:'contractNo' },{ header:'المستأجر',key:'client',render:(_,r)=>r.client?.fullName },{ header:'المخزن',key:'warehouse',render:(_,r)=>r.warehouse?.name },{ header:'المدة',key:'status',render:(_,r)=>`${new Date(r.startDate).toLocaleDateString('ar-IQ')}→${new Date(r.endDate).toLocaleDateString('ar-IQ')}` },{ header:'الإيجار',key:'rentAmount' },{ header:'المدفوع',key:'paidAmount' },{ header:'المتبقي',key:'remainingAmount' },{ header:'الحالة',key:'status',render:(v)=>statusText[v]||v }], 'العقود')}><FileDown className="w-4 h-4" /> Excel</Button>
-          <Button variant="outline" size="sm" onClick={() => exportToPDF('العقود', contracts, [{ header:'رقم العقد',key:'contractNo' },{ header:'المستأجر',key:'client',render:(_,r)=>r.client?.fullName },{ header:'المخزن',key:'warehouse',render:(_,r)=>r.warehouse?.name },{ header:'الإيجار',key:'rentAmount' },{ header:'المدفوع',key:'paidAmount' },{ header:'المتبقي',key:'remainingAmount' }], 'العقود')}><FileDown className="w-4 h-4" /> PDF</Button>
+          <Button variant="outline" size="sm" onClick={() => exportToExcel(contracts, [{ header:'رقم العقد',key:'contractNo' },{ header:'المستأجر',key:'tenant',render:(_,r)=>r.tenant?.name },{ header:'المخزن',key:'warehouse',render:(_,r)=>r.warehouse?.name },{ header:'المدة',key:'status',render:(_,r)=>`${new Date(r.startDate).toLocaleDateString('ar-IQ')}→${new Date(r.endDate).toLocaleDateString('ar-IQ')}` },{ header:'الإيجار',key:'rentAmount' },{ header:'المدفوع',key:'paidAmount' },{ header:'المتبقي',key:'remainingAmount' },{ header:'الحالة',key:'status',render:(v)=>statusText[v]||v }], 'العقود')}><FileDown className="w-4 h-4" /> Excel</Button>
+          <Button variant="outline" size="sm" onClick={() => exportToPDF('العقود', contracts, [{ header:'رقم العقد',key:'contractNo' },{ header:'المستأجر',key:'tenant',render:(_,r)=>r.tenant?.name },{ header:'المخزن',key:'warehouse',render:(_,r)=>r.warehouse?.name },{ header:'الإيجار',key:'rentAmount' },{ header:'المدفوع',key:'paidAmount' },{ header:'المتبقي',key:'remainingAmount' }], 'العقود')}><FileDown className="w-4 h-4" /> PDF</Button>
           <Button onClick={() => router.push('/admin/contracts/create')} className="flex items-center gap-2">
             <Plus className="w-4 h-4" /> إنشاء عقد
           </Button>
@@ -120,7 +120,7 @@ export default function AdminContractsPage() {
                       <Badge className={statusColor[c.status]}>{statusText[c.status]}</Badge>
                       {c.remainingAmount === 0 && c.status === 'ACTIVE' && <Badge className="bg-green-100 text-green-700">مسدد بالكامل</Badge>}
                     </div>
-                    <p className="text-sm">{c.warehouse?.name} - {c.client?.fullName}</p>
+                    <p className="text-sm">{c.warehouse?.name} - {c.tenant?.name}</p>
                     <p className="text-xs text-gray-500">
                       {new Date(c.startDate).toLocaleDateString('ar-IQ')} → {new Date(c.endDate).toLocaleDateString('ar-IQ')}
                       {' | '}{Number(c.rentAmount).toLocaleString()} دينار
@@ -140,8 +140,8 @@ export default function AdminContractsPage() {
                       <Printer className="w-3.5 h-3.5" />
                     </Button>
                     <WhatsAppButton
-                      phone={c.clientPhone || c.client?.phone || ''}
-                      name={c.client?.fullName || ''}
+                      phone={c.tenantPhone || c.tenant?.phone || ''}
+                      name={c.tenant?.name || ''}
                       defaultCategory="contracts"
                       presetFields={{ amount: String(c.rentAmount || ''), contractNo: c.contractNo, warehouse: c.warehouse?.name || '', date: new Date(c.endDate).toLocaleDateString('ar-IQ') }}
                     />

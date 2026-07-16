@@ -46,9 +46,7 @@ export default function PrintContractPage() {
     <>
       <style>{`
         @page { size: A4; margin: 8mm; }
-        @media print {
-          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        }
+        @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
       `}</style>
       <div className="max-w-[210mm] mx-auto">
         <div className="flex gap-2 mb-4 print:hidden sticky top-4 z-10">
@@ -75,9 +73,8 @@ export default function PrintContractPage() {
           <div className="grid grid-cols-2 gap-2 mb-3">
             <div className="border rounded p-2">
               <h2 className="font-bold text-xs text-gray-600 mb-1">المستأجر</h2>
-              <p className="text-sm font-semibold">{contract.client?.fullName}</p>
-              <p className="text-xs text-gray-600">هاتف: {contract.clientPhone || contract.client?.phone}{contract.clientPhone2 ? ` / ${contract.clientPhone2}` : ''}</p>
-              {contract.client?.email && <p className="text-xs text-gray-600">بريد: {contract.client?.email}</p>}
+              <p className="text-sm font-semibold">{contract.tenant?.name}</p>
+              <p className="text-xs text-gray-600">هاتف: {contract.tenantPhone || contract.tenant?.phone}{contract.tenantPhone2 ? ` / ${contract.tenantPhone2}` : ''}</p>
             </div>
             <div className="border rounded p-2">
               <h2 className="font-bold text-xs text-gray-600 mb-1">المخزن</h2>
@@ -89,69 +86,29 @@ export default function PrintContractPage() {
 
           <table className="w-full mb-3 border-collapse text-xs">
             <tbody>
-              <tr className="border-b">
-                <td className="py-1 text-gray-600 font-medium w-1/2">تاريخ البداية</td>
-                <td className="py-1 font-semibold">{new Date(contract.startDate).toLocaleDateString('ar-IQ')}</td>
-              </tr>
-              <tr className="border-b">
-                <td className="py-1 text-gray-600 font-medium">تاريخ النهاية</td>
-                <td className="py-1 font-semibold">{new Date(contract.endDate).toLocaleDateString('ar-IQ')}</td>
-              </tr>
-              <tr className="border-b">
-                <td className="py-1 text-gray-600 font-medium">مبلغ الإيجار</td>
-                <td className="py-1 font-semibold">{Number(contract.rentAmount).toLocaleString()} دينار</td>
-              </tr>
-              {contract.discount > 0 && (
-                <tr className="border-b">
-                  <td className="py-1 text-gray-600 font-medium">التخفيض</td>
-                  <td className="py-1 font-semibold text-red-600">-{Number(contract.discount).toLocaleString()} دينار</td>
-                </tr>
-              )}
-              {contract.guardFeeMonthly > 0 && (
-                <tr className="border-b">
-                  <td className="py-1 text-gray-600 font-medium">أجر الحارس (شهري)</td>
-                  <td className="py-1 font-semibold">{Number(contract.guardFeeMonthly).toLocaleString()} دينار</td>
-                </tr>
-              )}
-              <tr className="border-b">
-                <td className="py-1 text-gray-600 font-medium">المدفوع</td>
-                <td className="py-1 font-semibold text-green-600">{Number(paidAmount).toLocaleString()} دينار</td>
-              </tr>
-              <tr className="border-b">
-                <td className="py-1 text-gray-600 font-medium">المتبقي</td>
-                <td className={`py-1 font-semibold ${remainingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>{remainingAmount > 0 ? `${Number(remainingAmount).toLocaleString()} دينار` : 'مسدد بالكامل'}</td>
-              </tr>
+              <tr className="border-b"><td className="py-1 text-gray-600 font-medium w-1/2">تاريخ البداية</td><td className="py-1 font-semibold">{new Date(contract.startDate).toLocaleDateString('ar-IQ')}</td></tr>
+              <tr className="border-b"><td className="py-1 text-gray-600 font-medium">تاريخ النهاية</td><td className="py-1 font-semibold">{new Date(contract.endDate).toLocaleDateString('ar-IQ')}</td></tr>
+              <tr className="border-b"><td className="py-1 text-gray-600 font-medium">مبلغ الإيجار</td><td className="py-1 font-semibold">{Number(contract.rentAmount).toLocaleString()} دينار</td></tr>
+              {contract.discount > 0 && <tr className="border-b"><td className="py-1 text-gray-600 font-medium">التخفيض</td><td className="py-1 font-semibold text-red-600">-{Number(contract.discount).toLocaleString()} دينار</td></tr>}
+              {contract.guardFeeMonthly > 0 && <tr className="border-b"><td className="py-1 text-gray-600 font-medium">أجر الحارس (شهري)</td><td className="py-1 font-semibold">{Number(contract.guardFeeMonthly).toLocaleString()} دينار</td></tr>}
+              <tr className="border-b"><td className="py-1 text-gray-600 font-medium">المدفوع</td><td className="py-1 font-semibold text-green-600">{Number(paidAmount).toLocaleString()} دينار</td></tr>
+              <tr className="border-b"><td className="py-1 text-gray-600 font-medium">المتبقي</td><td className={`py-1 font-semibold ${remainingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>{remainingAmount > 0 ? `${Number(remainingAmount).toLocaleString()} دينار` : 'مسدد بالكامل'}</td></tr>
             </tbody>
           </table>
 
-          {contract.storedMaterials && (
-            <div className="border rounded p-2 mb-2">
-              <h2 className="font-bold text-xs text-gray-600 mb-1">المواد المخزنة</h2>
-              <p className="text-xs">{contract.storedMaterials}</p>
-            </div>
-          )}
-
-          {contract.notes && (
-            <div className="border rounded p-2 mb-2">
-              <h2 className="font-bold text-xs text-gray-600 mb-1">ملاحظات</h2>
-              <p className="text-xs">{contract.notes}</p>
-            </div>
-          )}
+          {contract.storedMaterials && <div className="border rounded p-2 mb-2"><h2 className="font-bold text-xs text-gray-600 mb-1">المواد المخزنة</h2><p className="text-xs">{contract.storedMaterials}</p></div>}
+          {contract.notes && <div className="border rounded p-2 mb-2"><h2 className="font-bold text-xs text-gray-600 mb-1">ملاحظات</h2><p className="text-xs">{contract.notes}</p></div>}
 
           <div className="border rounded p-2 mb-2">
             <h2 className="font-bold text-xs text-gray-600 mb-1">شروط التأجير</h2>
-            <ol className="text-xs space-y-1 pr-4">
-              {terms.map((t, i) => (
-                <li key={i} className="leading-relaxed">{i + 1}. {t}</li>
-              ))}
-            </ol>
+            <ol className="text-xs space-y-1 pr-4">{terms.map((t, i) => <li key={i} className="leading-relaxed">{i + 1}. {t}</li>)}</ol>
           </div>
 
           <div className="grid grid-cols-2 gap-8 mt-6 pt-3">
             <div className="text-center">
               <div className="border-t border-gray-800 pt-1">
                 <p className="text-xs font-bold">توقيع المستأجر</p>
-                <p className="text-xs text-gray-500">{contract.client?.fullName}</p>
+                <p className="text-xs text-gray-500">{contract.tenant?.name}</p>
               </div>
             </div>
             <div className="text-center">

@@ -14,28 +14,38 @@ model User {
   passwordHash   String
   fullName       String
   phone          String
-  role           String   // ADMIN, CLIENT, GUARD
+  role           String   // ADMIN, GUARD
   isActive       Boolean  @default(true)
   language       String   @default("ar")
   avatarUrl      String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  contracts           Contract[]        @relation("ClientContracts")
-  bookings            Booking[]
-  inventoryItems      Inventory[]       @relation("ClientInventory")
-  payments            Payment[]         @relation("ClientPayments")
-  guardReports        GuardReport[]     @relation("GuardReports")
-  guardLogs           AccessLog[]       @relation("GuardAccessLogs")
-  guardCollections    GuardCollection[] @relation("GuardCollections")
-  guardWarehouses     Warehouse[]       @relation("GuardWarehouses")
-  clientCollections   GuardCollection[] @relation("ClientCollections")
-  clientServices      ExtraService[]    @relation("ClientServices")
-  notifications       Notification[]
-  guardTasks          GuardTask[]       @relation("GuardTasks")
-  createdTasks        GuardTask[]       @relation("CreatedTasks")
+  guardReports     GuardReport[]     @relation("GuardReports")
+  guardLogs        AccessLog[]       @relation("GuardAccessLogs")
+  guardCollections GuardCollection[] @relation("GuardCollections")
+  guardWarehouses  Warehouse[]       @relation("GuardWarehouses")
+  notifications    Notification[]
+  guardTasks       GuardTask[]       @relation("GuardTasks")
+  createdTasks     GuardTask[]       @relation("CreatedTasks")
 
   @@index([role])
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  phone2    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contracts        Contract[]
+  payments         Payment[]
+  guardCollections GuardCollection[]
+  accessLogs       AccessLog[]
+
+  @@index([name])
 }
 
 model Group {
@@ -72,85 +82,66 @@ model Warehouse {
   guard      User?      @relation("GuardWarehouses", fields: [guardId], references: [id])
   group      Group?     @relation(fields: [groupId], references: [id])
   contracts  Contract[]
-  bookings   Booking[]
   accessLogs AccessLog[]
   tasks      GuardTask[]
-  inventory  Inventory[]
 }
 
 model Contract {
-  id             String   @id @default(cuid())
-  contractNo     String   @unique
-  clientId       String
-  warehouseId    String
-  startDate      DateTime
-  endDate        DateTime
-  rentAmount     Float
-  discount       Float    @default(0)
+  id              String   @id @default(cuid())
+  contractNo      String   @unique
+  tenantId        String
+  warehouseId     String
+  startDate       DateTime
+  endDate         DateTime
+  rentAmount      Float
+  discount        Float    @default(0)
   guardFeeMonthly Float   @default(0)
-  isPreAgreed    Boolean  @default(false)
-  clientPhone    String?
-  clientPhone2   String?
+  isPreAgreed     Boolean  @default(false)
+  tenantPhone     String?
+  tenantPhone2    String?
   storedMaterials String?
-  status         String   @default("PENDING") // ACTIVE, EXPIRED, TERMINATED, PENDING
-  notes          String?
-  signedByAdmin  Boolean  @default(false)
-  signedByClient Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  status          String   @default("PENDING") // ACTIVE, EXPIRED, TERMINATED, PENDING
+  notes           String?
+  signedByAdmin   Boolean  @default(false)
+  signedByTenant  Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  client    User      @relation("ClientContracts", fields: [clientId], references: [id])
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
   warehouse Warehouse @relation(fields: [warehouseId], references: [id])
   payments  Payment[]
 
-  @@index([clientId])
+  @@index([tenantId])
   @@index([warehouseId])
   @@index([status])
 }
 
-model Booking {
-  id          String   @id @default(cuid())
-  clientId    String
-  warehouseId String
-  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
-  message     String?
-  adminNotes  String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  client    User      @relation(fields: [clientId], references: [id])
-  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
-
-  @@index([clientId])
-  @@index([warehouseId])
-}
-
 model Payment {
-  id            String    @id @default(cuid())
-  contractId    String
-  clientId      String
-  amount        Float
-  currency      String    @default("IQD")
-  method        String    // ki_card, zaincash, cash, bank
-  status        String    @default("PENDING") // PENDING, PAID, OVERDUE, CANCELLED
-  referenceNo   String?   // payment gateway ref
-  paidAt        DateTime?
-  dueDate       DateTime
-  description   String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          String    @id @default(cuid())
+  contractId  String
+  tenantId    String
+  amount      Float
+  currency    String    @default("IQD")
+  method      String    // ki_card, zaincash, cash, bank
+  status      String    @default("PENDING") // PENDING, PAID, OVERDUE, CANCELLED
+  referenceNo String?   // payment gateway ref
+  paidAt      DateTime?
+  dueDate     DateTime
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  client   User     @relation("ClientPayments", fields: [clientId], references: [id])
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([contractId])
-  @@index([clientId])
+  @@index([tenantId])
 }
 
 model GuardCollection {
   id          String   @id @default(cuid())
   guardId     String
-  clientId    String?
+  tenantId    String?
   contractId  String?
   amount      Float
   currency    String   @default("IQD")
@@ -160,8 +151,8 @@ model GuardCollection {
   syncedAt    DateTime @default(now())
   createdAt   DateTime @default(now())
 
-  guard  User  @relation("GuardCollections", fields: [guardId], references: [id])
-  client User? @relation("ClientCollections", fields: [clientId], references: [id])
+  guard  User    @relation("GuardCollections", fields: [guardId], references: [id])
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
 
   @@index([guardId])
 }
@@ -185,7 +176,7 @@ model AccessLog {
   id          String   @id @default(cuid())
   guardId     String
   warehouseId String?
-  clientId    String?
+  tenantId    String?
   action      String   // entry, exit, shipment_in, shipment_out
   qrCode      String?
   notes       String?
@@ -195,41 +186,9 @@ model AccessLog {
 
   guard     User       @relation("GuardAccessLogs", fields: [guardId], references: [id])
   warehouse Warehouse? @relation(fields: [warehouseId], references: [id])
+  tenant    Tenant?    @relation(fields: [tenantId], references: [id])
 
   @@index([guardId])
-}
-
-model Inventory {
-  id          String   @id @default(cuid())
-  clientId    String
-  warehouseId String?
-  itemName    String
-  subName     String?
-  quantity    Int
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  client User @relation("ClientInventory", fields: [clientId], references: [id])
-  warehouse Warehouse? @relation(fields: [warehouseId], references: [id])
-
-  @@index([warehouseId])
-}
-
-model ExtraService {
-  id          String    @id @default(cuid())
-  clientId    String
-  warehouseId String?
-  serviceType String    // cleaning, security, maintenance, other
-  description String
-  status      String    @default("pending") // pending, completed, cancelled
-  price       Float?
-  createdAt   DateTime  @default(now())
-  completedAt DateTime?
-
-  client User @relation("ClientServices", fields: [clientId], references: [id])
-
-  @@index([clientId])
 }
 
 model Notification {

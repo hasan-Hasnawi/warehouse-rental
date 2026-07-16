@@ -68,8 +68,6 @@ export const api = {
   auth: {
     login: (data: { email: string; password: string }) =>
       request<{ user: any; token: string }>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
-    register: (data: { email: string; password: string; fullName: string; phone: string }) =>
-      request<{ user: any; token: string }>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
     profile: () => request<any>('/auth/profile'),
     updateProfile: (data: any) => mutate<any>('/auth/profile', { method: 'PUT', body: JSON.stringify(data) }, 'profile:update'),
   },
@@ -93,7 +91,7 @@ export const api = {
     create: (data: any) => mutate<any>('/contracts', { method: 'POST', body: JSON.stringify(data) }, 'contract:create'),
     update: (id: string, data: any) => mutate<any>(`/contracts/${id}`, { method: 'PUT', body: JSON.stringify(data) }, 'contract:update'),
     terminate: (id: string) => mutate<any>(`/contracts/${id}/terminate`, { method: 'POST' }, 'contract:terminate'),
-    signByClient: (id: string) => mutate<any>(`/contracts/${id}/sign-client`, { method: 'POST' }, 'contract:sign'),
+    signByTenant: (id: string) => mutate<any>(`/contracts/${id}/sign-tenant`, { method: 'POST' }, 'contract:sign'),
     signByAdmin: (id: string) => mutate<any>(`/contracts/${id}/sign-admin`, { method: 'POST' }, 'contract:sign'),
     expiring: () => request<{ expiring: any[]; expired: any[] }>('/contracts/expiring'),
     deleteContract: (id: string) => mutate<any>(`/contracts/${id}`, { method: 'DELETE' }, 'contract:delete'),
@@ -133,17 +131,11 @@ export const api = {
       updateStatus: (id: string, status: string) => mutate<any>(`/guards/tasks/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }, 'task:update'),
     },
   },
-  bookings: {
-    list: (params?: string) => request<any[]>(`/bookings${params ? `?${params}` : ''}`),
-    create: (data: any) => mutate<any>('/bookings', { method: 'POST', body: JSON.stringify(data) }, 'booking:create'),
-    cancel: (id: string) => mutate<any>(`/bookings/${id}/cancel`, { method: 'POST' }, 'booking:cancel'),
-    approve: (id: string) => mutate<any>(`/bookings/${id}/approve`, { method: 'POST' }, 'booking:approve'),
-    reject: (id: string) => mutate<any>(`/bookings/${id}/reject`, { method: 'POST' }, 'booking:reject'),
-    delete: (id: string) => mutate<any>(`/bookings/${id}`, { method: 'DELETE' }, 'booking:delete'),
-  },
-  services: {
-    list: () => request<any[]>('/services'),
-    create: (data: any) => mutate<any>('/services', { method: 'POST', body: JSON.stringify(data) }, 'service:create'),
+  tenants: {
+    search: (q: string) => request<{ id: string; name: string; phone: string | null; phone2: string | null }[]>(`/tenants/search?q=${encodeURIComponent(q)}`),
+    list: () => request<any[]>('/tenants'),
+    getById: (id: string) => request<any>(`/tenants/${id}`),
+    create: (data: any) => mutate<any>('/tenants', { method: 'POST', body: JSON.stringify(data) }, 'tenant:create'),
   },
   notifications: {
     list: (params?: string) => request<any[]>(`/notifications${params ? `?${params}` : ''}`),
@@ -151,11 +143,5 @@ export const api = {
     markAsRead: (id: string) => request<any>(`/notifications/${id}/read`, { method: 'PUT' }),
     markAllAsRead: () => request<any>('/notifications/read-all', { method: 'PUT' }),
     delete: (ids: string[]) => request<any>('/notifications/delete', { method: 'POST', body: JSON.stringify({ ids }) }),
-  },
-  inventory: {
-    list: () => request<any[]>('/inventory'),
-    create: (data: any) => mutate<any>('/inventory', { method: 'POST', body: JSON.stringify(data) }, 'inventory:create'),
-    update: (id: string, data: any) => mutate<any>(`/inventory/${id}`, { method: 'PUT', body: JSON.stringify(data) }, 'inventory:update'),
-    delete: (id: string) => mutate<any>(`/inventory/${id}`, { method: 'DELETE' }, 'inventory:delete'),
   },
 }

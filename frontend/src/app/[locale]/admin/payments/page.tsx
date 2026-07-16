@@ -33,8 +33,8 @@ export default function AdminPaymentsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">المدفوعات</h1>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => exportToExcel(payments, [{ header:'المبلغ',key:'amount' },{ header:'العملة',key:'currency' },{ header:'المستأجر',key:'client',render:(_,r)=>r.client?.fullName },{ header:'العقد',key:'contract',render:(_,r)=>r.contract?.contractNo },{ header:'طريقة الدفع',key:'method' },{ header:'الحالة',key:'status',render:(v)=>statusText[v]||v }], 'المدفوعات')}><FileDown className="w-4 h-4" /> Excel</Button>
-          <Button variant="outline" size="sm" onClick={() => exportToPDF('المدفوعات', payments, [{ header:'المبلغ',key:'amount' },{ header:'المستأجر',key:'client',render:(_,r)=>r.client?.fullName },{ header:'العقد',key:'contract',render:(_,r)=>r.contract?.contractNo },{ header:'طريقة الدفع',key:'method' },{ header:'الحالة',key:'status',render:(v)=>statusText[v]||v }], 'المدفوعات')}><FileDown className="w-4 h-4" /> PDF</Button>
+          <Button variant="outline" size="sm" onClick={() => exportToExcel(payments, [{ header:'المبلغ',key:'amount' },{ header:'العملة',key:'currency' },{ header:'المستأجر',key:'tenant',render:(_,r)=>r.tenant?.name },{ header:'العقد',key:'contract',render:(_,r)=>r.contract?.contractNo },{ header:'طريقة الدفع',key:'method' },{ header:'الحالة',key:'status',render:(v)=>statusText[v]||v }], 'المدفوعات')}><FileDown className="w-4 h-4" /> Excel</Button>
+          <Button variant="outline" size="sm" onClick={() => exportToPDF('المدفوعات', payments, [{ header:'المبلغ',key:'amount' },{ header:'المستأجر',key:'tenant',render:(_,r)=>r.tenant?.name },{ header:'العقد',key:'contract',render:(_,r)=>r.contract?.contractNo },{ header:'طريقة الدفع',key:'method' },{ header:'الحالة',key:'status',render:(v)=>statusText[v]||v }], 'المدفوعات')}><FileDown className="w-4 h-4" /> PDF</Button>
         </div>
       </div>
       <div className="grid gap-3">
@@ -47,7 +47,7 @@ export default function AdminPaymentsPage() {
                     <p className="font-semibold">{Number(p.amount).toLocaleString()} {p.currency}</p>
                     <Badge className={statusColor[p.status]}>{statusText[p.status]}</Badge>
                   </div>
-                  <p className="text-sm text-gray-500">{p.client?.fullName} - {p.contract?.contractNo}</p>
+                  <p className="text-sm text-gray-500">{p.tenant?.name} - {p.contract?.contractNo}</p>
                   <p className="text-xs text-gray-400">
                     {p.method} - {p.paidAt ? new Date(p.paidAt).toLocaleDateString('ar-IQ') : `استحقاق: ${new Date(p.dueDate).toLocaleDateString('ar-IQ')}`}
                   </p>

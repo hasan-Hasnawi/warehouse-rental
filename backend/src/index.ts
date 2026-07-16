@@ -6,9 +6,7 @@ import warehouseRoutes from './modules/warehouses/warehouse.routes';
 import contractRoutes from './modules/contracts/contract.routes';
 import paymentRoutes from './modules/payments/payment.routes';
 import guardRoutes from './modules/guards/guard.routes';
-import bookingRoutes from './modules/bookings/booking.routes';
-import serviceRoutes from './modules/services/service.routes';
-import inventoryRoutes from './modules/inventory/inventory.routes';
+import tenantRoutes from './modules/tenants/tenant.routes';
 import groupRoutes from './modules/groups/group.routes';
 import notificationRoutes from './modules/notifications/notification.routes';
 
@@ -25,9 +23,7 @@ app.use('/api/warehouses', warehouseRoutes);
 app.use('/api/contracts', contractRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/guards', guardRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/services', serviceRoutes);
-app.use('/api/inventory', inventoryRoutes);
+app.use('/api/tenants', tenantRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/notifications', notificationRoutes);
 

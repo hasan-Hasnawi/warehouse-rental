@@ -1,20 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from '@/i18n/navigation'
 import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Shield, Layers, DollarSign, CalendarDays, BadgePercent, UserCheck, Phone, Package } from 'lucide-react'
+import { Shield, Layers, DollarSign, CalendarDays, BadgePercent, UserCheck, Phone, Package, Search } from 'lucide-react'
 
 export default function CreateContractPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [clients, setClients] = useState<any[]>([])
   const [warehouses, setWarehouses] = useState<any[]>([])
   const [selectedWarehouse, setSelectedWarehouse] = useState<any>(null)
   const [startDate, setStartDate] = useState('')
@@ -23,27 +21,32 @@ export default function CreateContractPage() {
   const [guardFeeMonthly, setGuardFeeMonthly] = useState('0')
   const [isPreAgreed, setIsPreAgreed] = useState(false)
   const [notes, setNotes] = useState('')
-  const [clientId, setClientId] = useState('')
-  const [clientPhone, setClientPhone] = useState('')
-  const [clientPhone2, setClientPhone2] = useState('')
+  const [tenantName, setTenantName] = useState('')
+  const [tenantPhone, setTenantPhone] = useState('')
+  const [tenantPhone2, setTenantPhone2] = useState('')
   const [storedMaterials, setStoredMaterials] = useState('')
   const [warehouseId, setWarehouseId] = useState('')
   const [loading, setLoading] = useState(false)
   const [renewLoading, setRenewLoading] = useState(false)
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [showResults, setShowResults] = useState(false)
+  const [searching, setSearching] = useState(false)
+  const debounceRef = useRef<any>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const renewId = searchParams.get('renew')
     if (renewId) {
       setRenewLoading(true)
       api.contracts.getById(renewId).then(old => {
-        setClientId(old.clientId)
+        setTenantName(old.tenant?.name || '')
         setWarehouseId(old.warehouseId)
         setDiscount(String(old.discount || 0))
         setGuardFeeMonthly(String(old.guardFeeMonthly || 0))
         setIsPreAgreed(true)
         setNotes(old.notes || '')
-        setClientPhone(old.clientPhone || '')
-        setClientPhone2(old.clientPhone2 || '')
+        setTenantPhone(old.tenantPhone || '')
+        setTenantPhone2(old.tenantPhone2 || '')
         setStoredMaterials(old.storedMaterials || '')
         setDurationMonths('6')
       }).catch(console.error).finally(() => setRenewLoading(false))
@@ -51,28 +54,45 @@ export default function CreateContractPage() {
   }, [searchParams])
 
   useEffect(() => {
-    api.admin.listUsers('CLIENT').then(setClients).catch(console.error)
     api.warehouses.list('status=VACANT').then(setWarehouses).catch(console.error)
   }, [])
-
-  useEffect(() => {
-    if (clientId) {
-      const c = clients.find(c => c.id === clientId)
-      if (c) {
-        setClientPhone(c.phone || '')
-        setClientPhone2('')
-      }
-    }
-  }, [clientId, clients])
 
   useEffect(() => {
     if (warehouseId) {
       const wh = warehouses.find(w => w.id === warehouseId)
       setSelectedWarehouse(wh || null)
-    } else {
-      setSelectedWarehouse(null)
-    }
+    } else { setSelectedWarehouse(null) }
   }, [warehouseId, warehouses])
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setShowResults(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleSearch = (q: string) => {
+    setTenantName(q)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (!q.trim()) { setSearchResults([]); setShowResults(false); return }
+    setSearching(true)
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const results = await api.tenants.search(q)
+        setSearchResults(results)
+        setShowResults(results.length > 0)
+      } catch { setSearchResults([]) }
+      finally { setSearching(false) }
+    }, 300)
+  }
+
+  const selectTenant = (t: any) => {
+    setTenantName(t.name)
+    setTenantPhone(t.phone || '')
+    setTenantPhone2(t.phone2 || '')
+    setShowResults(false)
+  }
 
   const computeEndDate = () => {
     if (!startDate || !durationMonths) return ''
@@ -91,38 +111,30 @@ export default function CreateContractPage() {
   }
 
   const handleSubmit = async () => {
-    if (!clientId || !warehouseId || !startDate) {
+    if (!tenantName || !warehouseId || !startDate) {
       alert('يرجى تعبئة جميع الحقول المطلوبة')
       return
     }
-
     const months = parseInt(durationMonths)
-    if (!isPreAgreed && months < 6) {
-      alert('أقل مدة للعقد هي 6 أشهر')
-      return
-    }
-
+    if (!isPreAgreed && months < 6) { alert('أقل مدة للعقد هي 6 أشهر'); return }
     const endDate = computeEndDate()
     const rentAmount = computeRentAmount()
     setLoading(true)
     try {
       await api.contracts.create({
-        clientId, warehouseId, startDate, endDate,
+        tenantName, warehouseId, startDate, endDate,
         rentAmount,
         discount: parseFloat(discount) || 0,
         guardFeeMonthly: parseFloat(guardFeeMonthly) || 0,
         isPreAgreed,
-        clientPhone: clientPhone || undefined,
-        clientPhone2: clientPhone2 || undefined,
+        tenantPhone: tenantPhone || undefined,
+        tenantPhone2: tenantPhone2 || undefined,
         storedMaterials: storedMaterials || undefined,
         notes,
       })
       router.push('/admin/contracts')
-    } catch (err: any) {
-      alert(err.message)
-    } finally {
-      setLoading(false)
-    }
+    } catch (err: any) { alert(err.message) }
+    finally { setLoading(false) }
   }
 
   return (
@@ -134,24 +146,38 @@ export default function CreateContractPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>معلومات العقد</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>معلومات العقد</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+            <div className="space-y-2" ref={wrapperRef}>
               <Label>المستأجر *</Label>
-              <Select value={clientId} onChange={e => setClientId(e.target.value)}>
-                <option value="">اختر المستأجر</option>
-                {clients.map(c => <option key={c.id} value={c.id}>{c.fullName} ({c.email})</option>)}
-              </Select>
+              <div className="relative">
+                <Input
+                  placeholder="ابحث باسم المستأجر..."
+                  value={tenantName}
+                  onChange={e => handleSearch(e.target.value)}
+                  onFocus={() => { if (searchResults.length > 0) setShowResults(true) }}
+                />
+                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                {searching && <span className="absolute left-8 top-2.5 text-xs text-gray-400">جاري البحث...</span>}
+              </div>
+              {showResults && (
+                <div className="absolute z-10 w-[calc(50%-1rem)] bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                  {searchResults.map(t => (
+                    <button key={t.id} type="button" className="w-full text-right px-4 py-2 hover:bg-yellow-50 text-sm" onClick={() => selectTenant(t)}>
+                      <span className="font-medium">{t.name}</span>
+                      {t.phone && <span className="text-gray-500 mr-2">{t.phone}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label>المخزن *</Label>
-              <Select value={warehouseId} onChange={e => setWarehouseId(e.target.value)}>
+              <select value={warehouseId} onChange={e => setWarehouseId(e.target.value)} className="w-full border rounded-lg p-2 text-sm">
                 <option value="">اختر المخزن</option>
                 {warehouses.map(w => <option key={w.id} value={w.id}>{w.name} ({w.code}) - {w.city}</option>)}
-              </Select>
+              </select>
             </div>
           </div>
 
@@ -159,12 +185,8 @@ export default function CreateContractPage() {
             <div className="bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
               <p className="font-semibold">معلومات المخزن</p>
               <div className="grid grid-cols-2 gap-2 text-gray-600">
-                {selectedWarehouse.group && (
-                  <span className="flex items-center gap-1"><Layers className="w-3 h-3" /> المجموعة: {selectedWarehouse.group.name}</span>
-                )}
-                {selectedWarehouse.guard && (
-                  <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> الحارس: {selectedWarehouse.guard.fullName}</span>
-                )}
+                {selectedWarehouse.group && <span className="flex items-center gap-1"><Layers className="w-3 h-3" /> المجموعة: {selectedWarehouse.group.name}</span>}
+                {selectedWarehouse.guard && <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> الحارس: {selectedWarehouse.guard.fullName}</span>}
                 <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" /> السعر: {Number(selectedWarehouse.pricePer6Months || selectedWarehouse.pricePerMonth * 6).toLocaleString()} / 6 أشهر</span>
                 <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" /> المساحة: {selectedWarehouse.area} م²</span>
               </div>
@@ -172,10 +194,7 @@ export default function CreateContractPage() {
           )}
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>تاريخ البدء *</Label>
-              <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
-            </div>
+            <div className="space-y-2"><Label>تاريخ البدء *</Label><Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} /></div>
             <div className="space-y-2">
               <Label>المدة (بالأشهر) *</Label>
               <Input type="number" min={isPreAgreed ? 1 : 6} value={durationMonths} onChange={e => setDurationMonths(e.target.value)} />
@@ -191,83 +210,40 @@ export default function CreateContractPage() {
           )}
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>التخفيض (مبلغ ثابت)</Label>
-              <div className="relative">
-                <Input type="number" min="0" value={discount} onChange={e => setDiscount(e.target.value)} />
-                <BadgePercent className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>أجر الحارس (شهري)</Label>
-              <Input type="number" min="0" value={guardFeeMonthly} onChange={e => setGuardFeeMonthly(e.target.value)} />
-            </div>
+            <div className="space-y-2"><Label>التخفيض (مبلغ ثابت)</Label><Input type="number" min="0" value={discount} onChange={e => setDiscount(e.target.value)} /></div>
+            <div className="space-y-2"><Label>أجر الحارس (شهري)</Label><Input type="number" min="0" value={guardFeeMonthly} onChange={e => setGuardFeeMonthly(e.target.value)} /></div>
           </div>
 
           <div className="border-t pt-4">
             <p className="font-semibold text-sm mb-3">معلومات المستأجر والمواد</p>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>رقم الهاتف 1</Label>
-                <div className="relative">
-                  <Input type="text" value={clientPhone} onChange={e => setClientPhone(e.target.value)} />
-                  <Phone className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>رقم الهاتف 2</Label>
-                <div className="relative">
-                  <Input type="text" value={clientPhone2} onChange={e => setClientPhone2(e.target.value)} />
-                  <Phone className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
+              <div className="space-y-2"><Label>رقم الهاتف 1</Label><Input type="text" value={tenantPhone} onChange={e => setTenantPhone(e.target.value)} /></div>
+              <div className="space-y-2"><Label>رقم الهاتف 2</Label><Input type="text" value={tenantPhone2} onChange={e => setTenantPhone2(e.target.value)} /></div>
             </div>
             <div className="space-y-2 mt-3">
               <Label>نوعية المواد المخزنة</Label>
-              <div className="relative">
-                <textarea
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  rows={2}
-                  value={storedMaterials}
-                  onChange={e => setStoredMaterials(e.target.value)}
-                  placeholder="مثال: مواد غذائية، قطع غيار، أثاث..."
-                />
-                <Package className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-              </div>
+              <textarea className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm" rows={2} value={storedMaterials} onChange={e => setStoredMaterials(e.target.value)} placeholder="مثال: مواد غذائية، قطع غيار، أثاث..." />
             </div>
           </div>
 
           {computeRentAmount() > 0 && (
             <div className="bg-green-50 p-4 rounded-lg space-y-1">
-              <div className="flex justify-between text-sm">
-                <span>إجمالي الإيجار:</span>
-                <span className="font-bold">{computeRentAmount().toLocaleString()} دينار</span>
-              </div>
-              {parseFloat(guardFeeMonthly) > 0 && (
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>أجر الحارس (شهري):</span>
-                  <span className="font-bold">{Number(guardFeeMonthly).toLocaleString()} دينار</span>
-                </div>
-              )}
+              <div className="flex justify-between text-sm"><span>إجمالي الإيجار:</span><span className="font-bold">{computeRentAmount().toLocaleString()} دينار</span></div>
+              {parseFloat(guardFeeMonthly) > 0 && <div className="flex justify-between text-sm text-gray-500"><span>أجر الحارس (شهري):</span><span className="font-bold">{Number(guardFeeMonthly).toLocaleString()} دينار</span></div>}
             </div>
           )}
 
           <div className="flex items-center gap-3">
-            <Label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={isPreAgreed} onChange={e => setIsPreAgreed(e.target.checked)} className="w-4 h-4" />
               <span className="text-sm">متفق عليه سابقاً (عقد بأثر رجعي)</span>
-            </Label>
+            </label>
             {isPreAgreed && <UserCheck className="w-4 h-4 text-orange-500" />}
           </div>
 
           <div className="space-y-2">
             <Label>ملاحظات</Label>
-            <textarea
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              rows={3}
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-            />
+            <textarea className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm" rows={3} value={notes} onChange={e => setNotes(e.target.value)} />
           </div>
 
           <div className="flex gap-2">

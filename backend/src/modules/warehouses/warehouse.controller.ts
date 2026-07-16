@@ -77,7 +77,7 @@ export async function getById(req: AuthRequest, res: Response) {
       include: {
         guard: { select: { id: true, fullName: true, email: true, phone: true } },
         group: { select: { id: true, name: true, investorName: true, description: true } },
-        contracts: { where: { status: 'ACTIVE' }, include: { client: { select: { id: true, fullName: true, phone: true } } } },
+        contracts: { where: { status: 'ACTIVE' }, include: { tenant: { select: { id: true, name: true, phone: true } } } },
       },
     });
     if (!warehouse) return res.status(404).json({ message: 'Warehouse not found' });
@@ -135,7 +135,7 @@ export async function remove(req: AuthRequest, res: Response) {
   try {
     const warehouse = await prisma.warehouse.findUnique({
       where: { id: req.params.id },
-      include: { contracts: { select: { id: true, status: true } }, bookings: { select: { id: true } } },
+      include: { contracts: { select: { id: true, status: true } } },
     });
     if (!warehouse) return res.status(404).json({ message: 'المخزن غير موجود' });
 
@@ -145,20 +145,14 @@ export async function remove(req: AuthRequest, res: Response) {
     }
 
     await prisma.$transaction(async (tx) => {
-      await tx.booking.deleteMany({ where: { warehouseId: req.params.id } });
-
       const contractIds = warehouse.contracts.map((c) => c.id);
       if (contractIds.length > 0) {
         await tx.payment.deleteMany({ where: { contractId: { in: contractIds } } });
         await tx.contract.deleteMany({ where: { id: { in: contractIds } } });
       }
-
       await tx.accessLog.updateMany({ where: { warehouseId: req.params.id }, data: { warehouseId: null } });
       await tx.guardTask.updateMany({ where: { warehouseId: req.params.id }, data: { warehouseId: null } });
-      await tx.inventory.updateMany({ where: { warehouseId: req.params.id }, data: { warehouseId: null } });
       await tx.guardReport.updateMany({ where: { warehouseId: req.params.id }, data: { warehouseId: null } });
-      await tx.extraService.updateMany({ where: { warehouseId: req.params.id }, data: { warehouseId: null } });
-
       await tx.warehouse.delete({ where: { id: req.params.id } });
     });
 

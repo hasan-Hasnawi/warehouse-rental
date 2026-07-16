@@ -10,13 +10,13 @@ import { logActivity } from '../../utils/logger';
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
-const registerSchema = z.object({
+const createUserSchema = z.object({
   email: z.string().email().optional(),
   username: z.string().min(3).optional().or(z.literal('')),
   password: z.string().min(6),
   fullName: z.string().min(2),
   phone: z.string().min(8),
-  role: z.enum(['ADMIN', 'CLIENT', 'GUARD']).default('CLIENT'),
+  role: z.enum(['ADMIN', 'GUARD']),
   language: z.enum(['ar', 'en', 'ku']).default('ar'),
 });
 
@@ -29,40 +29,6 @@ function generateToken(user: { id: string; email: string; role: string }) {
   return jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
     expiresIn: '7d' as any,
   });
-}
-
-export async function register(req: AuthRequest, res: Response) {
-  try {
-    const data = registerSchema.parse(req.body);
-    const email = data.email || `guard-${crypto.randomBytes(4).toString('hex')}@system.local`;
-    const username = data.username || undefined;
-
-    if (data.email) {
-      const existing = await prisma.user.findUnique({ where: { email } });
-      if (existing) return res.status(400).json({ message: 'Email already registered' });
-    }
-    if (username) {
-      const existingUsername = await prisma.user.findFirst({ where: { username } });
-      if (existingUsername) return res.status(400).json({ message: 'Username already taken' });
-    }
-
-    const passwordHash = await bcrypt.hash(data.password, 12);
-    const user = await prisma.user.create({
-      data: { email, username, passwordHash, fullName: data.fullName, phone: data.phone, role: data.role, language: data.language },
-      select: { id: true, email: true, username: true, fullName: true, phone: true, role: true, language: true },
-    });
-
-    const token = generateToken(user);
-    await logActivity({ userId: user.id, action: 'REGISTER', entity: 'User', entityId: user.id });
-
-    res.status(201).json({ user, token });
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      return res.status(400).json({ message: 'Validation error', errors: err.errors });
-    }
-    console.error(err);
-    res.status(500).json({ message: 'Internal server error' });
-  }
 }
 
 export async function login(req: AuthRequest, res: Response) {
@@ -158,7 +124,7 @@ export async function listUsers(req: AuthRequest, res: Response) {
 
 export async function createUserByAdmin(req: AuthRequest, res: Response) {
   try {
-    const data = registerSchema.parse(req.body);
+    const data = createUserSchema.parse(req.body);
     const email = data.email || `guard-${crypto.randomBytes(4).toString('hex')}@system.local`;
     const username = data.username || undefined;
 
@@ -193,7 +159,7 @@ export async function updateUser(req: AuthRequest, res: Response) {
       username: z.string().min(3).optional().or(z.literal('')),
       phone: z.string().min(8).optional(),
       password: z.string().min(6).optional(),
-      role: z.enum(['ADMIN', 'CLIENT', 'GUARD']).optional(),
+      role: z.enum(['ADMIN', 'GUARD']).optional(),
       isActive: z.boolean().optional(),
       language: z.enum(['ar', 'en', 'ku']).optional(),
     });
