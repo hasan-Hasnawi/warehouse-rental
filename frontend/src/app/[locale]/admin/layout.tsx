@@ -5,7 +5,7 @@ import { useRouter } from '@/i18n/navigation'
 import { useEffect } from 'react'
 import { Link } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
-import { Package, Users, FileText, CreditCard, Building2, LogOut, Menu, ShieldAlert, BarChart3, Layers, CalendarCheck, Wifi, WifiOff, RefreshCw, Loader2, Bell } from 'lucide-react'
+import { Package, Users, FileText, CreditCard, Building2, LogOut, Menu, ShieldAlert, BarChart3, Layers, CalendarCheck, Wifi, WifiOff, RefreshCw, Loader2, Bell, X } from 'lucide-react'
 import { useState } from 'react'
 import { useNetwork } from '@/lib/use-network'
 import { useUnreadNotifications } from '@/lib/use-notifications'
@@ -40,10 +40,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen flex">
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-20 bg-black/30 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
       <aside className={`bg-gradient-to-b from-white to-yellow-50 border-l border-yellow-100 w-64 fixed inset-y-0 right-0 z-30 transform transition-transform lg:relative lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="p-6 border-b border-yellow-100 bg-gradient-to-r from-yellow-400 to-yellow-500">
-          <h2 className="font-bold text-lg text-yellow-950">لوحة المدير</h2>
-          <p className="text-sm text-yellow-800">{user.fullName}</p>
+        <div className="p-6 border-b border-yellow-100 bg-gradient-to-r from-yellow-400 to-yellow-500 flex items-center justify-between">
+          <div>
+            <h2 className="font-bold text-lg text-yellow-950">لوحة المدير</h2>
+            <p className="text-sm text-yellow-800">{user.fullName}</p>
+          </div>
+          <button className="lg:hidden p-2 hover:bg-yellow-300/50 rounded-lg" onClick={() => setSidebarOpen(false)}>
+            <X className="w-5 h-5 text-yellow-950" />
+          </button>
         </div>
         <nav className="p-4 space-y-1">
           {navItems.map((item) => (
