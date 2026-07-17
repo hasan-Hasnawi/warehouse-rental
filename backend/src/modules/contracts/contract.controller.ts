@@ -90,7 +90,7 @@ export async function create(req: AuthRequest, res: Response) {
       return c;
     });
     await logActivity({ userId: req.user!.id, action: 'CREATE_CONTRACT', entity: 'Contract', entityId: contract.id });
-    await notifyAdmins('عقد جديد', `تم إنشاء العقد ${contract.contractNo} للمستأجر ${contract.tenant.name}`, 'info', `/admin/contracts/${contract.id}`);
+    await notifyAdmins('عقد جديد', `تم إنشاء العقد ${contract.contractNo} للمستأجر ${contract.tenant?.name || ''}`, 'info', `/admin/contracts/${contract.id}`);
     res.status(201).json(contract);
   } catch (err) {
     if (err instanceof z.ZodError) return res.status(400).json({ message: 'Validation error', errors: err.errors });

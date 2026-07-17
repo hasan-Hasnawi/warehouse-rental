@@ -109,7 +109,7 @@ export async function generateQR(req: AuthRequest, res: Response) {
       include: { tenant: { select: { name: true } }, warehouse: { select: { name: true, code: true } } },
     });
     if (!contract) return res.status(404).json({ message: 'Contract not found' });
-    const qrData = JSON.stringify({ type: 'warehouse_access', contractId: contract.id, tenant: contract.tenant.name, warehouse: contract.warehouse.name, code: contract.warehouse.code });
+    const qrData = JSON.stringify({ type: 'warehouse_access', contractId: contract.id, tenant: contract.tenant?.name || '', warehouse: contract.warehouse.name, code: contract.warehouse.code });
     const qrImage = await QRCode.toDataURL(qrData, { width: 300, margin: 2 });
     res.json({ qrCode: qrImage, contract });
   } catch (err) { console.error(err); res.status(500).json({ message: 'Internal server error' }); }

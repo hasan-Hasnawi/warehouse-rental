@@ -91,7 +91,7 @@ model Warehouse {
 model Contract {
   id              String   @id @default(cuid())
   contractNo      String   @unique
-  tenantId        String
+  tenantId        String?
   warehouseId     String
   startDate       DateTime
   endDate         DateTime
@@ -109,7 +109,7 @@ model Contract {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  tenant   Tenant?    @relation(fields: [tenantId], references: [id])
   warehouse Warehouse @relation(fields: [warehouseId], references: [id])
   payments  Payment[]
 
@@ -121,7 +121,7 @@ model Contract {
 model Payment {
   id          String    @id @default(cuid())
   contractId  String
-  tenantId    String
+  tenantId    String?
   amount      Float
   currency    String    @default("IQD")
   method      String    // ki_card, zaincash, cash, bank
@@ -134,7 +134,7 @@ model Payment {
   updatedAt   DateTime  @updatedAt
 
   contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  tenant   Tenant?   @relation(fields: [tenantId], references: [id])
 
   @@index([contractId])
   @@index([tenantId])

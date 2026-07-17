@@ -53,7 +53,7 @@ export async function create(req: AuthRequest, res: Response) {
       return res.status(400).json({ message: `المبلغ يتجاوز المتبقي من العقد. المتبقي: ${Math.max(0, contract.rentAmount - totalPaid)}` });
     }
     const payment = await prisma.payment.create({
-      data: { ...data, tenantId: contract.tenantId, status: data.status || 'PENDING', paidAt: data.status === 'PAID' ? (data.paidAt || new Date()) : undefined },
+      data: { ...data, tenantId: (contract as any).tenantId || (data as any).tenantId, status: data.status || 'PENDING', paidAt: data.status === 'PAID' ? (data.paidAt || new Date()) : undefined },
     });
     await logActivity({ userId: req.user!.id, action: 'CREATE_PAYMENT', entity: 'Payment', entityId: payment.id });
     res.status(201).json(payment);
