@@ -6,7 +6,7 @@ services:
     plan: free
     rootDir: backend
     buildCommand: npm ci --include=dev && npx prisma generate && rm -rf dist && npm run build
-    startCommand: npx prisma db push --accept-data-loss && node dist/seed.js && node dist/index.js
+    startCommand: echo 'ALTER TABLE "Warehouse" DROP CONSTRAINT IF EXISTS "Warehouse_code_key"' | npx prisma db execute --url "$DATABASE_URL" --stdin && npx prisma db push --accept-data-loss && node dist/seed.js && node dist/index.js
     healthCheckPath: /api/health
     envVars:
       - key: DATABASE_URL
