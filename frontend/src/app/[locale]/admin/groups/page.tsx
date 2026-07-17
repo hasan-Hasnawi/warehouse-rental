@@ -112,7 +112,13 @@ export default function AdminGroupsPage() {
       <div className="grid gap-3">
         {filtered.map(g => {
           const isExpanded = expandedId === g.id
-          const barColor = g.occupancyRate >= 80 ? 'bg-green-500' : g.occupancyRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+          const or = g.occupancyRate ?? 0
+          const barColor = or >= 80 ? 'bg-green-500' : or >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+          const revenue = g.totalRevenue || 0
+          const totalWh = g.totalWarehouses ?? g._count?.warehouses ?? 0
+          const rentedWh = g.rentedWarehouses ?? 0
+          const expiring = g.expiringCount ?? 0
+          const expired = g.expiredCount ?? 0
 
           return (
             <Card key={g.id}>
@@ -123,24 +129,24 @@ export default function AdminGroupsPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <Building2 className="w-4 h-4 text-gray-400 shrink-0" />
                         <p className="font-semibold">{g.name}</p>
-                        {g.expiringCount > 0 && (
+                        {expiring > 0 && (
                           <Badge className="bg-orange-100 text-orange-700 flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3" /> {g.expiringCount} وشيك
+                            <AlertTriangle className="w-3 h-3" /> {expiring} وشيك
                           </Badge>
                         )}
-                        {g.expiredCount > 0 && (
+                        {expired > 0 && (
                           <Badge className="bg-red-100 text-red-700 flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3" /> {g.expiredCount} منتهي
+                            <AlertTriangle className="w-3 h-3" /> {expired} منتهي
                           </Badge>
                         )}
-                        {g.occupancyRate >= 100 && (
+                        {or >= 100 && (
                           <Badge className="bg-blue-100 text-blue-700">ممتلئ</Badge>
                         )}
                       </div>
                       <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
                         <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {g.investorName}</span>
-                        <span className="flex items-center gap-1"><Warehouse className="w-3 h-3" /> {g.rentedWarehouses}/{g.totalWarehouses} مؤجر</span>
-                        <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" /> {g.totalRevenue.toLocaleString()} د.ع</span>
+                        <span className="flex items-center gap-1"><Warehouse className="w-3 h-3" /> {rentedWh}/{totalWh} مؤجر</span>
+                        <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" /> {revenue.toLocaleString()} د.ع</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 mr-3">
@@ -152,23 +158,23 @@ export default function AdminGroupsPage() {
 
                   <div className="mt-3 space-y-1">
                     <div className="flex justify-between text-xs text-gray-500">
-                      <span>نسبة الإشغال: {g.occupancyRate}%</span>
-                      <span>{g.rentedWarehouses} من {g.totalWarehouses} مخازن</span>
+                      <span>نسبة الإشغال: {or}%</span>
+                      <span>{rentedWh} من {totalWh} مخازن</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className={`${barColor} h-2 rounded-full transition-all duration-500`} style={{ width: `${g.occupancyRate}%` }} />
+                      <div className={`${barColor} h-2 rounded-full transition-all duration-500`} style={{ width: `${or}%` }} />
                     </div>
                   </div>
                 </div>
 
                 {isExpanded && (
                   <div className="border-t px-4 py-3 space-y-2">
-                    {g.warehouses && g.warehouses.length > 0 ? (
+                    {(g.warehouses && g.warehouses.length > 0) ? (
                       g.warehouses.map((w: any) => (
                         <div key={w.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-3">
                             <span className="font-medium text-sm">{w.code}</span>
-                            <Badge className={statusColor[w.status]}>{statusText[w.status]}</Badge>
+                            <Badge className={statusColor[w.status] || 'bg-gray-100 text-gray-700'}>{statusText[w.status] || w.status}</Badge>
                             {w.activeContract && (
                               <span className="text-sm text-gray-600">
                                 {w.activeContract.tenant?.name}
@@ -176,7 +182,7 @@ export default function AdminGroupsPage() {
                             )}
                           </div>
                           <div className="flex items-center gap-2">
-                            {w.activeContract && (
+                            {w.activeContract?.id && (
                               <Button
                                 variant="ghost"
                                 size="sm"
