@@ -40,8 +40,9 @@ async function cleanOldData() {
 }
 
 async function main() {
-  // Drop old unique constraint on code (from previous schema version) if it still exists
+  // Drop old unique constraint/index on code (from previous schema version) if it still exists
   await prisma.$executeRawUnsafe(`ALTER TABLE "Warehouse" DROP CONSTRAINT IF EXISTS "Warehouse_code_key"`).catch(() => {});
+  await prisma.$executeRawUnsafe(`DROP INDEX IF EXISTS "Warehouse_code_key"`).catch(() => {});
 
   const adminHash = await bcrypt.hash('admin123', 12);
   const guardHash = await bcrypt.hash('salam123', 12);
