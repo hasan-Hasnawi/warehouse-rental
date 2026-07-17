@@ -27,6 +27,17 @@ app.use('/api/tenants', tenantRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/notifications', notificationRoutes);
 
+// TEMP: drop old unique constraint on code
+app.post('/api/admin/drop-constraint', async (req: any, res: any) => {
+  try {
+    await prisma.$executeRawUnsafe(`ALTER TABLE "Warehouse" DROP CONSTRAINT IF EXISTS "Warehouse_code_key"`);
+    await prisma.$executeRawUnsafe(`DROP INDEX IF EXISTS "Warehouse_code_key"`);
+    res.json({ message: 'Done' });
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
