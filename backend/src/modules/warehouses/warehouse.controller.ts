@@ -118,6 +118,7 @@ export async function create(req: AuthRequest, res: Response) {
     res.status(201).json(warehouse);
   } catch (err) {
     if (err instanceof z.ZodError) return res.status(400).json({ message: 'Validation error', errors: err.errors });
+    if ((err as any)?.code === 'P2002') return res.status(400).json({ message: 'رقم المخزن مكرر ضمن هذه المجموعة' });
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });
   }
@@ -163,6 +164,7 @@ export async function update(req: AuthRequest, res: Response) {
     res.json(warehouse);
   } catch (err) {
     if (err instanceof z.ZodError) return res.status(400).json({ message: 'Validation error', errors: err.errors });
+    if ((err as any)?.code === 'P2002') return res.status(400).json({ message: 'رقم المخزن مكرر ضمن هذه المجموعة' });
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });
   }
