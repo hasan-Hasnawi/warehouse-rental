@@ -6,8 +6,8 @@ import { logActivity } from '../../utils/logger';
 import { safeJsonParse } from '../../utils/helpers';
 
 const warehouseSchema = z.object({
-  name: z.string().min(2),
-  code: z.string().min(2),
+  name: z.string().optional(),
+  code: z.string().min(1, 'رقم المخزن مطلوب'),
   description: z.string().optional(),
   area: z.number().positive(),
   address: z.string().min(5),
@@ -96,8 +96,22 @@ export async function create(req: AuthRequest, res: Response) {
   try {
     const data = warehouseSchema.parse(req.body);
     const { features, guardId, groupId, ...rest } = data;
+
+    if (groupId) {
+      const existing = await prisma.warehouse.findFirst({ where: { groupId, code: data.code } });
+      if (existing) return res.status(400).json({ message: 'رقم المخزن مكرر ضمن هذه المجموعة' });
+    }
+
+    let name = data.name;
+    if (!name && groupId) {
+      const group = await prisma.group.findUnique({ where: { id: groupId } });
+      name = group ? `${group.name} - ${data.code}` : data.code;
+    } else if (!name) {
+      name = data.code;
+    }
+
     const warehouse = await prisma.warehouse.create({
-      data: { ...rest, guardId: guardId || null, groupId: groupId || null, features: JSON.stringify(features) },
+      data: { ...rest, name, guardId: guardId || null, groupId: groupId || null, features: JSON.stringify(features) },
       include: { guard: { select: { id: true, fullName: true } }, group: { select: { id: true, name: true } } },
     });
     await logActivity({ userId: req.user!.id, action: 'CREATE', entity: 'Warehouse', entityId: warehouse.id });
@@ -117,6 +131,29 @@ export async function update(req: AuthRequest, res: Response) {
     if (guardId !== undefined) updateData.guardId = guardId || null;
     if (groupId !== undefined) updateData.groupId = groupId || null;
     if (features) updateData.features = JSON.stringify(features);
+
+    const current = await prisma.warehouse.findUnique({ where: { id: req.params.id } });
+    if (!current) return res.status(404).json({ message: 'المخزن غير موجود' });
+
+    const effectiveGroupId = groupId !== undefined ? groupId : current.groupId;
+    const effectiveCode = data.code || current.code;
+
+    if (effectiveGroupId) {
+      const duplicate = await prisma.warehouse.findFirst({
+        where: { groupId: effectiveGroupId, code: effectiveCode, id: { not: req.params.id } },
+      });
+      if (duplicate) return res.status(400).json({ message: 'رقم المخزن مكرر ضمن هذه المجموعة' });
+    }
+
+    if (data.code && data.code !== current.code) {
+      if (effectiveGroupId) {
+        const group = await prisma.group.findUnique({ where: { id: effectiveGroupId } });
+        updateData.name = group ? `${group.name} - ${data.code}` : data.code;
+      } else {
+        updateData.name = data.code;
+      }
+    }
+
     const warehouse = await prisma.warehouse.update({
       where: { id: req.params.id },
       data: updateData,
@@ -158,6 +195,56 @@ export async function remove(req: AuthRequest, res: Response) {
 
     await logActivity({ userId: req.user!.id, action: 'DELETE', entity: 'Warehouse', entityId: req.params.id });
     res.json({ message: 'تم حذف المخزن بنجاح' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+export async function searchByGroup(req: AuthRequest, res: Response) {
+  try {
+    const { groupId, code } = req.query;
+    if (!groupId || !code) return res.status(400).json({ message: 'groupId and code are required' });
+
+    const warehouse = await prisma.warehouse.findFirst({
+      where: { groupId: groupId as string, code: { contains: code as string } },
+      include: {
+        guard: { select: { id: true, fullName: true } },
+        group: { select: { id: true, name: true, investorName: true } },
+      },
+    });
+
+    if (!warehouse) return res.json(null);
+    res.json({
+      ...warehouse,
+      features: safeJsonParse(warehouse.features, []),
+      images: safeJsonParse(warehouse.images, []),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+export async function searchByGroupPartial(req: AuthRequest, res: Response) {
+  try {
+    const { groupId, q } = req.query;
+    if (!groupId || !q) return res.status(400).json({ message: 'groupId and q are required' });
+
+    const warehouses = await prisma.warehouse.findMany({
+      where: {
+        groupId: groupId as string,
+        code: { contains: q as string },
+      },
+      include: {
+        guard: { select: { id: true, fullName: true } },
+        group: { select: { id: true, name: true } },
+      },
+      take: 10,
+      orderBy: { code: 'asc' },
+    });
+
+    res.json(warehouses.map(w => ({ ...w, features: safeJsonParse(w.features, []), images: safeJsonParse(w.images, []) })));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });

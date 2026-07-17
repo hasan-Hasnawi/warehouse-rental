@@ -38,27 +38,27 @@ async function main() {
   });
 
   const w1 = await prisma.warehouse.upsert({
-    where: { code: 'WH-001' },
-    update: { guardId: guard.id, groupId: groupA.id, pricePer6Months: 9000000, status: 'RENTED' },
-    create: { name: 'مخزن المنطقة الصناعية أ', code: 'WH-001', description: 'مخزن كبير في المنطقة الصناعية', area: 500, address: 'المنطقة الصناعية، شارع 15', city: 'بغداد', pricePerMonth: 1500000, pricePer6Months: 9000000, guardId: guard.id, groupId: groupA.id, status: 'RENTED', features: JSON.stringify(['24h_security', 'cctv', 'loading_dock', 'ventilation']) },
+    where: { id: 'seed-wh-1' },
+    update: { guardId: guard.id, groupId: groupA.id, pricePer6Months: 9000000, status: 'RENTED', code: '1', name: `${groupA.name} - 1` },
+    create: { id: 'seed-wh-1', name: `${groupA.name} - 1`, code: '1', description: 'مخزن كبير في المنطقة الصناعية', area: 500, address: 'المنطقة الصناعية، شارع 15', city: 'بغداد', pricePerMonth: 1500000, pricePer6Months: 9000000, guardId: guard.id, groupId: groupA.id, status: 'RENTED', features: JSON.stringify(['24h_security', 'cctv', 'loading_dock', 'ventilation']) },
   });
 
   const w2 = await prisma.warehouse.upsert({
-    where: { code: 'WH-002' },
-    update: { guardId: guard.id, groupId: groupA.id, pricePer6Months: 5400000, status: 'RENTED' },
-    create: { name: 'مخزن شارع المطار', code: 'WH-002', description: 'مخزن متوسط قرب مطار بغداد', area: 300, address: 'شارع المطار، مجمع الأعمال', city: 'بغداد', pricePerMonth: 900000, pricePer6Months: 5400000, guardId: guard.id, groupId: groupA.id, status: 'RENTED', features: JSON.stringify(['cctv', 'fire_safety']) },
+    where: { id: 'seed-wh-2' },
+    update: { guardId: guard.id, groupId: groupA.id, pricePer6Months: 5400000, status: 'RENTED', code: '2', name: `${groupA.name} - 2` },
+    create: { id: 'seed-wh-2', name: `${groupA.name} - 2`, code: '2', description: 'مخزن متوسط قرب مطار بغداد', area: 300, address: 'شارع المطار، مجمع الأعمال', city: 'بغداد', pricePerMonth: 900000, pricePer6Months: 5400000, guardId: guard.id, groupId: groupA.id, status: 'RENTED', features: JSON.stringify(['cctv', 'fire_safety']) },
   });
 
   const w3 = await prisma.warehouse.upsert({
-    where: { code: 'WH-003' },
-    update: { guardId: guard.id, groupId: groupB.id, pricePer6Months: 4500000 },
-    create: { name: 'مخزن الكرادة', code: 'WH-003', description: 'مخزن في منطقة الكرادة التجارية', area: 200, address: 'الكرادة، شارع أبو نؤاس', city: 'بغداد', pricePerMonth: 750000, pricePer6Months: 4500000, guardId: guard.id, groupId: groupB.id, features: JSON.stringify(['cctv', 'ac']) },
+    where: { id: 'seed-wh-3' },
+    update: { guardId: guard.id, groupId: groupB.id, pricePer6Months: 4500000, code: '1', name: `${groupB.name} - 1` },
+    create: { id: 'seed-wh-3', name: `${groupB.name} - 1`, code: '1', description: 'مخزن في منطقة الكرادة التجارية', area: 200, address: 'الكرادة، شارع أبو نؤاس', city: 'بغداد', pricePerMonth: 750000, pricePer6Months: 4500000, guardId: guard.id, groupId: groupB.id, features: JSON.stringify(['cctv', 'ac']) },
   });
 
   const w4 = await prisma.warehouse.upsert({
-    where: { code: 'WH-004' },
-    update: { guardId: guard.id, groupId: groupB.id, pricePer6Months: 7200000 },
-    create: { name: 'مخزن أربيل الصناعي', code: 'WH-004', description: 'مخزن واسع في المنطقة الصناعية بأربيل', area: 400, address: 'المنطقة الصناعية، شارع 40', city: 'أربيل', pricePerMonth: 1200000, pricePer6Months: 7200000, guardId: guard.id, groupId: groupB.id, features: JSON.stringify(['24h_security', 'cctv', 'loading_dock']) },
+    where: { id: 'seed-wh-4' },
+    update: { guardId: guard.id, groupId: groupB.id, pricePer6Months: 7200000, code: '2', name: `${groupB.name} - 2` },
+    create: { id: 'seed-wh-4', name: `${groupB.name} - 2`, code: '2', description: 'مخزن واسع في المنطقة الصناعية بأربيل', area: 400, address: 'المنطقة الصناعية، شارع 40', city: 'أربيل', pricePerMonth: 1200000, pricePer6Months: 7200000, guardId: guard.id, groupId: groupB.id, features: JSON.stringify(['24h_security', 'cctv', 'loading_dock']) },
   });
 
   const now = new Date();
@@ -115,7 +115,7 @@ async function main() {
   console.log('Admin:  admin@sotrage.com / admin123');
   console.log('Guard:  salam@test.com    / salam123');
   console.log('Groups: المجموعة أ (مستثمر أ), المجموعة ب (مستثمر ب)');
-  console.log('Warehouses: WH-001→WH-004 assigned to guard سلام');
+  console.log('Warehouses: groupA[1,2], groupB[1,2] assigned to guard سلام');
   console.log('Contract CTR-001: expires in ~10 days (orange)');
   console.log('Contract CTR-002: expired ~30 days ago (red)');
 }

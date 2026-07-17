@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +25,7 @@ const statusText: Record<string, string> = {
 }
 
 export default function AdminWarehousesPage() {
+  const searchParams = useSearchParams()
   const [warehouses, setWarehouses] = useState<any[]>([])
   const [groups, setGroups] = useState<any[]>([])
   const [guards, setGuards] = useState<any[]>([])
@@ -34,6 +36,7 @@ export default function AdminWarehousesPage() {
   const [filterAreaMin, setFilterAreaMin] = useState('')
   const [filterAreaMax, setFilterAreaMax] = useState('')
   const [form, setForm] = useState({ name: '', code: '', area: '', address: '', city: '', pricePer6Months: '', description: '', guardId: '', groupId: '', status: '' })
+  const [generatedName, setGeneratedName] = useState('')
 
   const buildParams = () => {
     const p = new URLSearchParams()
@@ -52,24 +55,43 @@ export default function AdminWarehousesPage() {
   useEffect(() => { load() }, [])
 
   useEffect(() => {
+    const groupId = searchParams.get('groupId')
+    if (groupId && groups.length > 0) {
+      setForm(prev => ({ ...prev, groupId }))
+      setShowForm(true)
+    }
+  }, [searchParams, groups])
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       api.warehouses.list(buildParams()).then(setWarehouses).catch(console.error)
     }, 300)
     return () => clearTimeout(timer)
   }, [filterGuard, filterGroup, filterAreaMin, filterAreaMax])
 
-  const resetForm = () => { setForm({ name: '', code: '', area: '', address: '', city: '', pricePer6Months: '', description: '', guardId: '', groupId: '', status: '' }); setEditingId(null) }
+  useEffect(() => {
+    if (form.groupId && form.code) {
+      const g = groups.find(x => x.id === form.groupId)
+      setGeneratedName(g ? `${g.name} - ${form.code}` : form.code)
+    } else {
+      setGeneratedName(form.code || '')
+    }
+  }, [form.groupId, form.code, groups])
+
+  const resetForm = () => { setForm({ name: '', code: '', area: '', address: '', city: '', pricePer6Months: '', description: '', guardId: '', groupId: '', status: '' }); setEditingId(null); setGeneratedName('') }
 
   const handleSubmit = async () => {
     const p = parseFloat(form.pricePer6Months)
-    const data = {
+    const data: any = {
       ...form,
+      name: generatedName || form.name,
       area: parseFloat(form.area),
       pricePer6Months: p,
       pricePerMonth: Math.round(p / 6),
       guardId: form.guardId || undefined,
       groupId: form.groupId || undefined,
     }
+    delete data.status
     try {
       if (editingId) { await api.warehouses.update(editingId, data) } else { await api.warehouses.create(data) }
       resetForm(); setShowForm(false); load()
@@ -82,6 +104,10 @@ export default function AdminWarehousesPage() {
       pricePer6Months: w.pricePer6Months?.toString() || (w.pricePerMonth * 6).toString(),
       description: w.description || '', guardId: w.guardId || '', groupId: w.groupId || '', status: w.status || '',
     })
+    if (w.groupId && w.code) {
+      const g = groups.find(x => x.id === w.groupId)
+      setGeneratedName(g ? `${g.name} - ${w.code}` : w.code)
+    }
     setEditingId(w.id); setShowForm(true)
   }
 
@@ -138,19 +164,24 @@ export default function AdminWarehousesPage() {
         <Card>
           <CardContent className="p-6 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>اسم المخزن</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
-              <div className="space-y-2"><Label>الكود</Label><Input value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} /></div>
+              <div className="space-y-2"><Label>رقم المخزن *</Label><Input value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="مثال: 1, 2, 3..." /></div>
               <div className="space-y-2"><Label>المساحة (م²)</Label><Input type="number" value={form.area} onChange={e => setForm({ ...form, area: e.target.value })} /></div>
               <div className="space-y-2"><Label>السعر لكل 6 أشهر</Label><Input type="number" value={form.pricePer6Months} onChange={e => setForm({ ...form, pricePer6Months: e.target.value })} /></div>
               <div className="space-y-2"><Label>المدينة</Label><Input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} /></div>
               <div className="space-y-2"><Label>العنوان</Label><Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /></div>
               <div className="space-y-2">
-                <Label>المجموعة</Label>
+                <Label>المجموعة *</Label>
                 <Select value={form.groupId} onChange={e => setForm({ ...form, groupId: e.target.value })}>
                   <option value="">اختر المجموعة</option>
                   {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                 </Select>
               </div>
+              {generatedName && (
+                <div className="space-y-1 sm:col-span-2">
+                  <Label>اسم المخزن (تلقائي)</Label>
+                  <div className="px-3 py-2 bg-gray-50 border rounded-lg text-sm text-gray-700">{generatedName}</div>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label>الحارس</Label>
                 <Select value={form.guardId} onChange={e => setForm({ ...form, guardId: e.target.value })}>
@@ -185,7 +216,7 @@ export default function AdminWarehousesPage() {
             <CardContent className="p-4 flex items-start justify-between">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <p className="font-semibold">{w.name}</p>
+                  <p className="font-semibold">{w.group ? `${w.group.name} - ${w.code}` : w.name}</p>
                   <Badge className={statusColor[w.status]}>{statusText[w.status]}</Badge>
                 </div>
                 <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">

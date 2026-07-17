@@ -8,13 +8,17 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Shield, Layers, DollarSign, CalendarDays, BadgePercent, UserCheck, Phone, Package, Search } from 'lucide-react'
+import { Shield, Layers, DollarSign, CalendarDays, UserCheck, Search, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 export default function CreateContractPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [warehouses, setWarehouses] = useState<any[]>([])
+  const [groups, setGroups] = useState<any[]>([])
+  const [selectedGroup, setSelectedGroup] = useState('')
+  const [warehouseCode, setWarehouseCode] = useState('')
   const [selectedWarehouse, setSelectedWarehouse] = useState<any>(null)
+  const [warehouseSearching, setWarehouseSearching] = useState(false)
+  const [warehouseNotFound, setWarehouseNotFound] = useState(false)
   const [startDate, setStartDate] = useState('')
   const [durationMonths, setDurationMonths] = useState('6')
   const [discount, setDiscount] = useState('0')
@@ -32,6 +36,7 @@ export default function CreateContractPage() {
   const [showResults, setShowResults] = useState(false)
   const [searching, setSearching] = useState(false)
   const debounceRef = useRef<any>(null)
+  const whDebounceRef = useRef<any>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -54,15 +59,8 @@ export default function CreateContractPage() {
   }, [searchParams])
 
   useEffect(() => {
-    api.warehouses.list('status=VACANT').then(setWarehouses).catch(console.error)
+    api.groups.list().then(setGroups).catch(console.error)
   }, [])
-
-  useEffect(() => {
-    if (warehouseId) {
-      const wh = warehouses.find(w => w.id === warehouseId)
-      setSelectedWarehouse(wh || null)
-    } else { setSelectedWarehouse(null) }
-  }, [warehouseId, warehouses])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -71,6 +69,38 @@ export default function CreateContractPage() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  useEffect(() => {
+    if (selectedGroup && warehouseCode.trim()) {
+      if (whDebounceRef.current) clearTimeout(whDebounceRef.current)
+      setWarehouseSearching(true)
+      setWarehouseNotFound(false)
+      setSelectedWarehouse(null)
+      whDebounceRef.current = setTimeout(async () => {
+        try {
+          const result = await api.warehouses.searchByGroup(selectedGroup, warehouseCode.trim())
+          if (result) {
+            setSelectedWarehouse(result)
+            setWarehouseId(result.id)
+            setWarehouseNotFound(false)
+          } else {
+            setSelectedWarehouse(null)
+            setWarehouseId('')
+            setWarehouseNotFound(true)
+          }
+        } catch {
+          setSelectedWarehouse(null)
+          setWarehouseId('')
+          setWarehouseNotFound(true)
+        }
+        finally { setWarehouseSearching(false) }
+      }, 400)
+    } else {
+      setSelectedWarehouse(null)
+      setWarehouseId('')
+      setWarehouseNotFound(false)
+    }
+  }, [selectedGroup, warehouseCode])
 
   const handleSearch = (q: string) => {
     setTenantName(q)
@@ -173,12 +203,38 @@ export default function CreateContractPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label>المخزن *</Label>
-              <select value={warehouseId} onChange={e => setWarehouseId(e.target.value)} className="w-full border rounded-lg p-2 text-sm">
-                <option value="">اختر المخزن</option>
-                {warehouses.map(w => <option key={w.id} value={w.id}>{w.name} ({w.code}) - {w.city}</option>)}
+              <Label>المجموعة *</Label>
+              <select value={selectedGroup} onChange={e => { setSelectedGroup(e.target.value); setWarehouseCode('') }} className="w-full border rounded-lg p-2 text-sm">
+                <option value="">اختر المجموعة</option>
+                {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
               </select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>رقم المخزن *</Label>
+            <div className="relative">
+              <Input
+                placeholder="أدخل رقم المخزن..."
+                value={warehouseCode}
+                onChange={e => setWarehouseCode(e.target.value)}
+                disabled={!selectedGroup}
+                className={warehouseNotFound ? 'border-red-500' : ''}
+              />
+              {warehouseSearching && <span className="absolute left-3 top-2.5 text-xs text-gray-400">جاري البحث...</span>}
+            </div>
+            {warehouseNotFound && (
+              <div className="flex items-center gap-2 text-red-600 text-sm mt-1">
+                <AlertCircle className="w-4 h-4" />
+                <span>لا يوجد مخزن بهذا الرقم في هذه المجموعة</span>
+              </div>
+            )}
+            {selectedWarehouse && (
+              <div className="flex items-center gap-2 text-green-600 text-sm mt-1">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>تم العثور على المخزن</span>
+              </div>
+            )}
           </div>
 
           {selectedWarehouse && (
@@ -247,7 +303,7 @@ export default function CreateContractPage() {
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={handleSubmit} disabled={loading}>{loading ? 'جاري الإنشاء...' : 'إنشاء العقد'}</Button>
+            <Button onClick={handleSubmit} disabled={loading || !warehouseId}>{loading ? 'جاري الإنشاء...' : 'إنشاء العقد'}</Button>
             <Button variant="outline" onClick={() => router.push('/admin/contracts')}>إلغاء</Button>
           </div>
         </CardContent>

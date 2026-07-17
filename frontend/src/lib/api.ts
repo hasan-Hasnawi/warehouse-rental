@@ -84,6 +84,10 @@ export const api = {
     create: (data: any) => mutate<any>('/warehouses', { method: 'POST', body: JSON.stringify(data) }, 'warehouse:create'),
     update: (id: string, data: any) => mutate<any>(`/warehouses/${id}`, { method: 'PUT', body: JSON.stringify(data) }, 'warehouse:update'),
     delete: (id: string) => mutate<any>(`/warehouses/${id}`, { method: 'DELETE' }, 'warehouse:delete'),
+    searchByGroup: (groupId: string, code: string) =>
+      request<any>(`/warehouses/search-by-group?groupId=${encodeURIComponent(groupId)}&code=${encodeURIComponent(code)}`),
+    searchByGroupPartial: (groupId: string, q: string) =>
+      request<any[]>(`/warehouses/search-by-group-partial?groupId=${encodeURIComponent(groupId)}&q=${encodeURIComponent(q)}`),
   },
   contracts: {
     list: (params?: string) => request<any[]>(`/contracts${params ? `?${params}` : ''}`),
